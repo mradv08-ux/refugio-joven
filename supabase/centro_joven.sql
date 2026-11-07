@@ -163,5 +163,6 @@ create policy cj_usos_equipo on public.cj_usos for all to authenticated
 
 insert into public.cj_material (id, nombre, icono, orden) values
   ('billar','Billar','🎱',1), ('pc1','Ordenador 1','💻',2), ('pc2','Ordenador 2','💻',3),
-  ('futbolin','Futbolín','⚽',4), ('ps5','PS5','🎮',5), ('pingpong','Ping pong','🏓',6)
+  ('futbolin','Futbolín','⚽',4), ('ps5','PS5','🎮',5), ('pingpong','Ping pong','🏓',6),
+  ('mandotv','Mando de la TV','📺',7)
 on conflict (id) do nothing;
