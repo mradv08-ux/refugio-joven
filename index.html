@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Refugio Joven · Control de acceso</title>
+  <meta name="description" content="Control de acceso del Centro Joven de San Juan del Puerto, by The Wild Side.">
+  <meta name="theme-color" content="#0b0f0c">
+  <meta name="robots" content="noindex">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="img/icono-192.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Refugio Joven">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ---------- Cargando ---------- -->
+<section id="pantalla-carga" class="pantalla centro">
+  <img src="img/logo.png" alt="The Wild Side" class="logo-grande pulso">
+  <p class="marca">Abriendo el refugio…</p>
+  <div id="carga-error" class="oculto">
+    <p class="aviso-texto" id="carga-error-texto">No hay conexión. Revisa la cobertura y vuelve a intentarlo.</p>
+    <button class="btn btn-verde" id="btn-reintentar">Reintentar</button>
+  </div>
+</section>
+
+<!-- ---------- Login ---------- -->
+<section id="pantalla-login" class="pantalla centro oculto">
+  <img src="img/logo.png" alt="The Wild Side" class="logo-grande">
+  <h1 class="titulo-marca">Refugio Joven</h1>
+  <p class="sub">Centro Joven · San Juan del Puerto</p>
+  <form id="form-login" class="tarjeta form" autocomplete="on">
+    <label>Correo
+      <input type="email" id="login-email" required autocomplete="username" inputmode="email" placeholder="tu@correo.com">
+    </label>
+    <label>Contraseña
+      <input type="password" id="login-pass" required autocomplete="current-password" placeholder="La misma que en Wild Pass">
+    </label>
+    <button class="btn btn-verde btn-grande" type="submit" id="btn-login">Entrar al refugio</button>
+    <button class="btn-enlace" type="button" id="btn-olvido">He olvidado la contraseña</button>
+    <p class="mensaje" id="login-msg" role="status"></p>
+  </form>
+  <p class="pie">by The Wild Side · <a href="legal.html">Privacidad</a></p>
+</section>
+
+<!-- ---------- Nueva contraseña ---------- -->
+<section id="pantalla-nueva-pass" class="pantalla centro oculto">
+  <img src="img/logo.png" alt="" class="logo-mediano">
+  <h1 class="titulo-marca">Nueva contraseña</h1>
+  <form id="form-nueva-pass" class="tarjeta form">
+    <label>Contraseña nueva
+      <input type="password" id="nueva-pass" required minlength="6" autocomplete="new-password">
+    </label>
+    <button class="btn btn-verde btn-grande" type="submit">Guardar</button>
+    <p class="mensaje" id="nueva-pass-msg" role="status"></p>
+  </form>
+</section>
+
+<!-- ---------- Sin acceso ---------- -->
+<section id="pantalla-sin-acceso" class="pantalla centro oculto">
+  <img src="img/logo.png" alt="" class="logo-mediano">
+  <h1 class="titulo-marca">Zona restringida</h1>
+  <p class="sub">Esta cuenta no está en el equipo del centro joven.<br><span id="sin-acceso-email" class="mono"></span></p>
+  <button class="btn btn-borde" id="btn-salir-2">Cambiar de cuenta</button>
+</section>
+
+<!-- ---------- App ---------- -->
+<div id="app" class="oculto">
+  <header class="cabecera">
+    <img src="img/logo.png" alt="The Wild Side" class="logo-cab">
+    <div class="cab-texto">
+      <span class="titulo-cab">Refugio Joven</span>
+      <span class="sub-cab" id="cab-usuario"></span>
+    </div>
+    <button class="btn-icono" id="btn-refrescar" aria-label="Actualizar datos">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    </button>
+    <button class="btn-icono" id="btn-salir" aria-label="Cerrar sesión">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M10 17v-3H3v-4h7V7l5 5-5 5zm2-15h7a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-7v-2h7V4h-7V2z"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- ===== PUERTA ===== -->
+    <section id="vista-puerta" class="vista">
+      <div class="tarjeta hoy">
+        <div class="hoy-fila">
+          <button class="btn-icono" id="dia-ant" aria-label="Día anterior">‹</button>
+          <div class="hoy-centro">
+            <span class="hoy-dia" id="puerta-dia"></span>
+            <span class="hoy-fecha mono" id="puerta-fecha"></span>
+          </div>
+          <button class="btn-icono" id="dia-sig" aria-label="Día siguiente">›</button>
+        </div>
+        <div class="contador">
+          <span class="contador-num mono" id="puerta-contador">0</span>
+          <span class="contador-txt">han entrado</span>
+        </div>
+        <p class="aviso-cerrado oculto" id="aviso-cerrado">Este día el refugio está cerrado (abrimos viernes, sábado y domingo).</p>
+        <div class="turno-hoy">
+          <span class="etiqueta">¿Quién curra este día?</span>
+          <div class="chips" id="puerta-turno"></div>
+        </div>
+      </div>
+
+      <div class="buscador">
+        <input type="search" id="puerta-buscar" placeholder="Busca o apunta un chaval…" autocomplete="off" aria-label="Buscar chaval">
+      </div>
+      <div id="puerta-resultados" class="lista"></div>
+
+      <h2 class="seccion">Dentro <span class="mono" id="puerta-dentro-num"></span></h2>
+      <div id="puerta-dentro" class="lista"></div>
+    </section>
+
+    <!-- ===== CHAVALES ===== -->
+    <section id="vista-chavales" class="vista oculto">
+      <div class="buscador fila">
+        <input type="search" id="chav-buscar" placeholder="Buscar por nombre…" autocomplete="off" aria-label="Buscar chaval">
+        <button class="btn btn-verde" id="btn-nuevo-chaval">+ Nuevo</button>
+      </div>
+      <div class="filtros" role="tablist" aria-label="Ordenar">
+        <button class="filtro activo" data-orden="nombre">A-Z</button>
+        <button class="filtro" data-orden="dias">Más días</button>
+        <button class="filtro" data-orden="faltas">Faltas</button>
+        <button class="filtro" data-orden="reciente">Recientes</button>
+      </div>
+      <p class="resumen" id="chav-resumen"></p>
+      <div id="chav-lista" class="lista"></div>
+    </section>
+
+    <!-- ===== TURNOS ===== -->
+    <section id="vista-turnos" class="vista oculto">
+      <div class="tarjeta mes-nav">
+        <button class="btn-icono" id="mes-ant" aria-label="Mes anterior">‹</button>
+        <span class="mes-titulo" id="mes-titulo"></span>
+        <button class="btn-icono" id="mes-sig" aria-label="Mes siguiente">›</button>
+      </div>
+
+      <div class="tarjeta reparto">
+        <h2 class="seccion sin-margen">Reparto del mes</h2>
+        <div id="reparto-personas" class="reparto-personas"></div>
+        <label class="dinero">Dinero a repartir
+          <span class="input-euro"><input type="number" id="reparto-total" inputmode="decimal" min="0" step="0.01" placeholder="0"><span>€</span></span>
+        </label>
+        <div id="reparto-resultado" class="reparto-resultado"></div>
+        <button class="btn btn-borde" id="btn-copiar-reparto">Copiar resumen para WhatsApp</button>
+      </div>
+
+      <h2 class="seccion">Días de apertura</h2>
+      <p class="resumen">Marca quién trabajó cada día. Toca un nombre para ponerlo o quitarlo.</p>
+      <div id="turnos-lista" class="lista"></div>
+    </section>
+  </main>
+
+  <nav class="barra" aria-label="Secciones">
+    <button class="tab activo" data-vista="puerta">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 21V3h11v2h3v16h2v2H3v-2h2zm2 0h7V5H7v16zm4-8h2v-2h-2v2zm5 8h1V7h-1v14z"/></svg>
+      <span>Puerta</span>
+    </button>
+    <button class="tab" data-vista="chavales">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13zm8 0c-.3 0-.6 0-1 .1 1.2.8 2 2 2 3.4V19h6v-2.5c0-2.3-4.7-3.5-7-3.5z"/></svg>
+      <span>Chavales</span>
+    </button>
+    <button class="tab" data-vista="turnos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></svg>
+      <span>Turnos y €</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ---------- Ventana emergente ---------- -->
+<div id="modal" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+  <div class="modal-fondo" data-cerrar></div>
+  <div class="modal-caja">
+    <div class="modal-cab">
+      <h2 id="modal-titulo"></h2>
+      <button class="btn-icono" data-cerrar aria-label="Cerrar">✕</button>
+    </div>
+    <div id="modal-cuerpo"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

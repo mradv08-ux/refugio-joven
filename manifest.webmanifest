@@ -1,0 +1,17 @@
+{
+  "name": "Refugio Joven · Centro Joven San Juan del Puerto",
+  "short_name": "Refugio Joven",
+  "description": "Control de acceso del Centro Joven, by The Wild Side",
+  "lang": "es-ES",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f0c",
+  "theme_color": "#0b0f0c",
+  "icons": [
+    { "src": "img/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "img/icono-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
