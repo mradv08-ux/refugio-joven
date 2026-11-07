@@ -120,3 +120,48 @@ on conflict (email) do nothing;
 grant select on public.cj_equipo to authenticated;
 grant select, insert, update, delete on public.cj_chavales, public.cj_entradas, public.cj_faltas, public.cj_turnos to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
+
+/* ---------- Material del centro y sus usos ---------- */
+create table if not exists public.cj_material (
+  id     text primary key,
+  nombre text not null,
+  icono  text not null default '🎮',
+  orden  smallint not null default 0,
+  activo boolean not null default true
+);
+create table if not exists public.cj_usos (
+  id            bigint generated always as identity primary key,
+  material_id   text not null references public.cj_material(id) on update cascade,
+  responsable_id bigint not null references public.cj_chavales(id) on delete cascade,
+  grupo         bigint[] not null default '{}',
+  fecha         date not null default (now() at time zone 'Europe/Madrid')::date,
+  inicio        timestamptz not null default now(),
+  fin           timestamptz,
+  devolucion    text check (devolucion in ('bien','danado','perdido','cambio')),
+  nota          text check (length(nota) <= 300),
+  falta_id      bigint references public.cj_faltas(id) on delete set null,
+  abierto_por   text default public.cj_mi_nombre(),
+  cerrado_por   text
+);
+-- Solo un uso abierto a la vez por cada cosa
+create unique index if not exists cj_usos_abierto on public.cj_usos (material_id) where fin is null;
+create index if not exists cj_usos_responsable on public.cj_usos (responsable_id);
+create index if not exists cj_usos_falta on public.cj_usos (falta_id);
+create index if not exists cj_usos_fecha on public.cj_usos (fecha);
+
+alter table public.cj_material enable row level security;
+alter table public.cj_usos enable row level security;
+revoke all on public.cj_material, public.cj_usos from anon;
+grant select on public.cj_material to authenticated;
+grant select, insert, update, delete on public.cj_usos to authenticated;
+
+drop policy if exists cj_material_equipo on public.cj_material;
+create policy cj_material_equipo on public.cj_material for select to authenticated using ((select public.cj_es_equipo()));
+drop policy if exists cj_usos_equipo on public.cj_usos;
+create policy cj_usos_equipo on public.cj_usos for all to authenticated
+  using ((select public.cj_es_equipo())) with check ((select public.cj_es_equipo()));
+
+insert into public.cj_material (id, nombre, icono, orden) values
+  ('billar','Billar','🎱',1), ('pc1','Ordenador 1','💻',2), ('pc2','Ordenador 2','💻',3),
+  ('futbolin','Futbolín','⚽',4), ('ps5','PS5','🎮',5), ('pingpong','Ping pong','🏓',6)
+on conflict (id) do nothing;

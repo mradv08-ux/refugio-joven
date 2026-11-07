@@ -20,7 +20,9 @@ const E = {
   vista: 'puerta',
   diaPuerta: null,     // 'AAAA-MM-DD'
   mesTurnos: null,     // { a, m } (m de 0 a 11)
-  orden: 'nombre'
+  orden: 'nombre',
+  material: [],        // [{ id, nombre, icono, orden }]
+  usos: []             // [{ id, material_id, responsable_id, grupo, fecha, inicio, fin, devolucion, nota, falta_id, ... }]
 };
 
 /* ---------- Utilidades ---------- */
@@ -143,14 +145,17 @@ function elegirDiaInicial() {
 
 /* ---------- Datos ---------- */
 async function cargarDatos() {
-  const [ch, en, fa, tu] = await Promise.all([
+  const [ch, en, fa, tu, ma, us] = await Promise.all([
     E.sb.from('cj_chavales').select('id,nombre,edad,notas,creado').order('nombre'),
     E.sb.from('cj_entradas').select('id,chaval_id,fecha,hora,registrado_por').order('hora', { ascending: false }).limit(20000),
     E.sb.from('cj_faltas').select('id,chaval_id,fecha,gravedad,motivo,puesta_por').order('fecha', { ascending: false }),
-    E.sb.from('cj_turnos').select('fecha,email')
+    E.sb.from('cj_turnos').select('fecha,email'),
+    E.sb.from('cj_material').select('id,nombre,icono,orden').eq('activo', true).order('orden'),
+    E.sb.from('cj_usos').select(USOS_CAMPOS).order('inicio', { ascending: false }).limit(5000)
   ]);
-  for (const r of [ch, en, fa, tu]) if (r.error) throw r.error;
+  for (const r of [ch, en, fa, tu, ma, us]) if (r.error) throw r.error;
   E.chavales = ch.data; E.entradas = en.data; E.faltas = fa.data; E.turnos = tu.data;
+  E.material = ma.data; E.usos = us.data;
 }
 
 async function refrescar(silencioso = false) {
@@ -192,6 +197,7 @@ function color(email) { return E.equipo.find(p => p.email === email)?.color || '
 
 /* ---------- Pintar ---------- */
 function pintarTodo() {
+  pintarMaterial();
   pintarPuerta();
   pintarChavales();
   pintarTurnos();
@@ -233,7 +239,7 @@ function pintarPuerta() {
     return `<div class="fila-chaval dentro clic" data-ficha="${c.id}">
       <div class="avatar">${inicial(c.nombre)}</div>
       <div class="info"><span class="nombre">${esc(c.nombre)}</span>
-        <span class="meta">${c.edad} años ${pildorasFaltas(c.id)}</span></div>
+        <span class="meta">${c.edad} años ${pildorasFaltas(c.id)} ${iconosUso(c.id)}</span></div>
       <span class="hora mono">${horaDe(e.hora)}</span>
     </div>`;
   }).join('') : `<div class="vacio"><b>Refugio vacío</b>Busca arriba al primer chaval que llegue.</div>`;
@@ -441,6 +447,8 @@ function abrirFicha(id) {
     </div>
     <button class="btn btn-llama btn-grande" id="btn-poner-falta">Poner falta</button>
 
+    ${htmlUsosFicha(id)}
+
     <h3 class="seccion sin-margen">Datos</h3>
     <form id="form-editar" class="form" style="max-width:none">
       <label>Nombre<input id="ed-nombre" maxlength="60" required value="${esc(c.nombre)}"></label>
@@ -481,6 +489,7 @@ function abrirFicha(id) {
       E.chavales = E.chavales.filter(x => x.id !== id);
       E.entradas = E.entradas.filter(x => x.chaval_id !== id);
       E.faltas = E.faltas.filter(x => x.chaval_id !== id);
+      E.usos = E.usos.filter(x => x.responsable_id !== id);
       cerrarModal(); aviso('Borrado'); pintarTodo();
     } catch (e) { aviso(errorHumano(e), true); }
   });
@@ -684,13 +693,14 @@ function enlazar() {
 
   // Clics delegados (listas que se repintan)
   document.addEventListener('click', (ev) => {
-    const el = ev.target.closest('[data-entrar],[data-quitar],[data-nuevo],[data-ficha],[data-turno],[data-cerrar]');
+    const el = ev.target.closest('[data-entrar],[data-quitar],[data-nuevo],[data-ficha],[data-turno],[data-material],[data-cerrar]');
     if (!el) return;
     if (el.dataset.entrar) registrarEntrada(Number(el.dataset.entrar));
     else if (el.dataset.quitar) quitarEntrada(Number(el.dataset.quitar));
     else if (el.hasAttribute('data-nuevo')) abrirNuevo($('#puerta-buscar').value, true);
     else if (el.dataset.ficha) abrirFicha(Number(el.dataset.ficha));
     else if (el.dataset.turno) cambiarTurno(el.dataset.turno, el.dataset.fecha);
+    else if (el.dataset.material) abrirMaterial(el.dataset.material);
     else if (el.hasAttribute('data-cerrar')) cerrarModal();
   });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrarModal(); });
