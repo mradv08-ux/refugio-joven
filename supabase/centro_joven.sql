@@ -115,3 +115,8 @@ insert into public.cj_equipo (email, nombre, color) values
   ('thewildsidebusiness@gmail.com', 'Mister', '#00c837'),
   ('castellanoleira@gmail.com',     'Leira',  '#f06a12')
 on conflict (email) do nothing;
+
+/* ---------- Permisos (Wild Pass no los da por defecto a tablas nuevas) ---------- */
+grant select on public.cj_equipo to authenticated;
+grant select, insert, update, delete on public.cj_chavales, public.cj_entradas, public.cj_faltas, public.cj_turnos to authenticated;
+grant usage, select on all sequences in schema public to authenticated;

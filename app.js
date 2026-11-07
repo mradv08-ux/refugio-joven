@@ -80,8 +80,13 @@ function mostrar(id) {
 }
 
 /* ---------- Arranque ---------- */
+let vigilante;
 async function iniciar() {
   mostrar('#pantalla-carga');
+  clearTimeout(vigilante);
+  vigilante = setTimeout(() => {
+    if (!$('#pantalla-carga').classList.contains('oculto')) falloCarga('Está tardando demasiado. Revisa la cobertura y pulsa Reintentar.');
+  }, 15000);
   $('#carga-error').classList.add('oculto');
   if (!window.supabase) return falloCarga('No se ha podido cargar la app. Revisa la cobertura y vuelve a intentarlo.');
   if (!E.sb) {
@@ -627,6 +632,7 @@ function enlazar() {
       if (error) throw error;
       await entrarConSesion(data.session);
     } catch (e) {
+      mostrar('#pantalla-login');
       msg.textContent = errorHumano(e);
     } finally { btn.disabled = false; btn.textContent = 'Entrar al refugio'; }
   });
