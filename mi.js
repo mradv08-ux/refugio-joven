@@ -93,6 +93,12 @@ function pintar() {
   });
   $('#m-yo').innerHTML = yo.length ? `<div class="yo-caja">${yo.join('')}</div>` : '';
 
+  // Normas para apuntarse: fichado hoy, una sola reserva, no esperar al juego al que juegas
+  const miReserva = d.juegos.find(j => j.espera.some(e => e.yo));
+  $('#m-aviso-reserva').innerHTML = !d.dentro_hoy
+    ? '<div class="alerta alerta-suave">🚪 Para apuntarte a un juego, primero <b>ficha tu entrada en recepción</b>.</div>'
+    : (miReserva ? '' : '<p class="resumen">Toca <b>⏳ Apuntarme</b> en el juego que quieras. Solo puedes estar en una lista a la vez.</p>');
+
   // Todos los juegos
   $('#m-juegos').innerHTML = d.juegos.map(j => {
     const esp = j.espera.length;
@@ -113,6 +119,7 @@ function pintar() {
           <span>${e.yo ? 'Tú' + (e.personas > 1 ? ` y ${e.personas - 1} más` : '') : `${esc(e.responsable)}${e.personas > 1 ? ` +${e.personas - 1}` : ''}`}</span>
           <small>${duracion(minutosDesde(e.desde))}</small></li>`).join('')}</ol>`
         : `<p class="sin-cola">${j.uso ? 'Nadie esperando' : 'Libre: pídelo en recepción'}</p>`}
+      ${botonReserva(j, d, miReserva)}
     </div>`;
   }).join('');
 
@@ -123,6 +130,67 @@ function pintar() {
       <div class="info"><span class="meta"><span class="pildora p-${f.gravedad}">${f.gravedad}</span> ${fechaCorta(f.fecha)}</span>
       <p>${esc(f.motivo)}</p></div></div>`).join('')}</div>` : '';
 }
+
+/* ---------- Apuntarse / salir de la lista de espera ---------- */
+function botonReserva(j, d, miReserva) {
+  const estoy = j.espera.find(e => e.yo);
+  if (estoy) return `<button class="btn btn-borde btn-reserva" data-salir="${esc(j.id)}">Salir de la lista</button>`;
+  if (!d.dentro_hoy) return '';
+  if (j.uso && j.uso.yo) return '<p class="sin-cola">Estás jugando aquí. Cuando lo devuelvas en recepción, podrás volver a apuntarte.</p>';
+  if (miReserva) return `<p class="sin-cola">Ya estás en la lista de ${esc(miReserva.nombre)} (solo una a la vez).</p>`;
+  return `<button class="btn btn-verde btn-reserva" data-apuntar="${esc(j.id)}">⏳ Apuntarme</button>`;
+}
+
+const MOTIVOS = {
+  sin_entrada: 'Primero tienes que fichar tu entrada en recepción.',
+  ya_reserva: 'Ya estás en otra lista. Solo puedes estar en una a la vez.',
+  jugando: 'Ya estás jugando a este juego. Cuando lo devuelvas, podrás apuntarte.',
+  codigo: 'Tu código ya no vale. Pide uno nuevo en recepción.',
+  juego: 'Ese juego no está disponible.'
+};
+
+async function llamar(fn, material) {
+  const r = await fetch(`${CFG.supabaseUrl}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: CFG.supabaseKey, Authorization: `Bearer ${CFG.supabaseKey}` },
+    body: JSON.stringify({ p_codigo: codigo, p_material: material })
+  });
+  if (!r.ok) throw new Error('red');
+  return r.json();
+}
+
+let toastTimer;
+function aviso(texto, error = false) {
+  const t = $('#toast');
+  t.textContent = texto;
+  t.classList.toggle('error', error);
+  t.classList.add('ver');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('ver'), 3200);
+}
+
+$('#m-juegos').addEventListener('click', async (ev) => {
+  const b = ev.target.closest('[data-apuntar],[data-salir]');
+  if (!b) return;
+  const apuntar = !!b.dataset.apuntar;
+  const mid = b.dataset.apuntar || b.dataset.salir;
+  const juego = datos.juegos.find(j => j.id === mid);
+  if (!apuntar && !confirm(`¿Salir de la lista de ${juego.nombre}? Perderás tu puesto.`)) return;
+  b.disabled = true;
+  try {
+    const r = await llamar(apuntar ? 'cj_portal_apuntar' : 'cj_portal_salir', mid);
+    if (r && r.ok) {
+      try { navigator.vibrate && navigator.vibrate(40); } catch (e) { /* nada */ }
+      aviso(apuntar ? `Apuntado a ${juego.nombre} ⏳ Cuando te toque, ve a recepción.` : 'Has salido de la lista');
+    } else {
+      const m = r && r.motivo === 'ya_reserva' && r.juego ? `Ya estás en la lista de ${r.juego}. Solo puedes estar en una a la vez.` : (MOTIVOS[r && r.motivo] || 'No se ha podido. Pregunta en recepción.');
+      aviso(m, true);
+    }
+  } catch (e) {
+    aviso('No hay conexión. Revisa la cobertura y vuelve a intentarlo.', true);
+  }
+  await entrar(codigo, true);
+});
 
 /* ---------- Pase con QR ---------- */
 function abrirPase() {

@@ -95,3 +95,61 @@ begin
 end $$;
 revoke all on function public.cj_portal(text) from public;
 grant execute on function public.cj_portal(text) to anon, authenticated;
+
+/* ---------- El chaval se apunta / se quita de la lista de espera ----------
+   Normas: tiene que haber fichado hoy, solo una reserva a la vez,
+   y no puede esperar al juego al que ya está jugando. */
+create or replace function public.cj_portal_apuntar(p_codigo text, p_material text)
+returns jsonb language plpgsql volatile security definer set search_path = '' as $$
+declare
+  cod text := upper(regexp_replace(coalesce(p_codigo, ''), '[^A-Za-z0-9]', '', 'g'));
+  yo public.cj_chavales;
+  hoy date := (now() at time zone 'Europe/Madrid')::date;
+  otro text;
+begin
+  if length(cod) <> 8 then return jsonb_build_object('ok', false, 'motivo', 'codigo'); end if;
+  select * into yo from public.cj_chavales where codigo = cod;
+  if not found then return jsonb_build_object('ok', false, 'motivo', 'codigo'); end if;
+  perform pg_advisory_xact_lock(hashtext('cj_espera_' || yo.id));
+  if not exists (select 1 from public.cj_material where id = p_material and activo) then
+    return jsonb_build_object('ok', false, 'motivo', 'juego');
+  end if;
+  if not exists (select 1 from public.cj_entradas where chaval_id = yo.id and fecha = hoy) then
+    return jsonb_build_object('ok', false, 'motivo', 'sin_entrada');
+  end if;
+  select m.nombre into otro from public.cj_espera e join public.cj_material m on m.id = e.material_id
+   where e.fecha = hoy and (e.responsable_id = yo.id or yo.id = any(e.grupo)) limit 1;
+  if otro is not null then return jsonb_build_object('ok', false, 'motivo', 'ya_reserva', 'juego', otro); end if;
+  if exists (select 1 from public.cj_usos u where u.material_id = p_material and u.fin is null
+              and (u.responsable_id = yo.id or yo.id = any(u.grupo))) then
+    return jsonb_build_object('ok', false, 'motivo', 'jugando');
+  end if;
+  insert into public.cj_espera (material_id, responsable_id, grupo, fecha, creado_por)
+  values (p_material, yo.id, '{}', hoy, 'Mi Refugio');
+  return jsonb_build_object('ok', true);
+end $$;
+revoke all on function public.cj_portal_apuntar(text, text) from public;
+grant execute on function public.cj_portal_apuntar(text, text) to anon, authenticated;
+
+create or replace function public.cj_portal_salir(p_codigo text, p_material text)
+returns jsonb language plpgsql volatile security definer set search_path = '' as $$
+declare
+  cod text := upper(regexp_replace(coalesce(p_codigo, ''), '[^A-Za-z0-9]', '', 'g'));
+  yo public.cj_chavales;
+  hoy date := (now() at time zone 'Europe/Madrid')::date;
+  n int;
+begin
+  if length(cod) <> 8 then return jsonb_build_object('ok', false, 'motivo', 'codigo'); end if;
+  select * into yo from public.cj_chavales where codigo = cod;
+  if not found then return jsonb_build_object('ok', false, 'motivo', 'codigo'); end if;
+  delete from public.cj_espera where material_id = p_material and fecha = hoy and responsable_id = yo.id;
+  get diagnostics n = row_count;
+  if n = 0 then
+    update public.cj_espera set grupo = array_remove(grupo, yo.id)
+     where material_id = p_material and fecha = hoy and yo.id = any(grupo);
+    get diagnostics n = row_count;
+  end if;
+  return jsonb_build_object('ok', n > 0);
+end $$;
+revoke all on function public.cj_portal_salir(text, text) from public;
+grant execute on function public.cj_portal_salir(text, text) to anon, authenticated;

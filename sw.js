@@ -1,6 +1,6 @@
 'use strict';
 // Sube VERSION cada vez que cambies archivos publicados, o los móviles seguirán con la vieja.
-const VERSION = 'refugio-joven-v8';
+const VERSION = 'refugio-joven-v9';
 const SHELL = [
   './', 'index.html', 'styles.css', 'app.js', 'material.js', 'portal.js', 'escaner.js', 'mi.html', 'mi.js', 'mi.css', 'mi.webmanifest', 'config.js', 'manifest.webmanifest', 'legal.html',
   'img/logo.png', 'img/icono-192.png', 'img/icono-512.png', 'img/apple-touch-icon.png',

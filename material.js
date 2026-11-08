@@ -57,12 +57,18 @@ function estadoTiempo(m, u) {
 
 // ¿Por qué no puede alguien entrar en un turno o en la espera de este juego?
 // opciones: ignorarUso (id de uso cuyos jugadores se permiten), ignorarEspera (id de espera)
-function motivoBloqueo(mid, cid, { ignorarUso = null, ignorarEspera = null, saliente = [] } = {}) {
+// paraEspera: además, norma de una sola reserva a la vez (en cualquier juego)
+function motivoBloqueo(mid, cid, { ignorarUso = null, ignorarEspera = null, saliente = [], paraEspera = false } = {}) {
   if (saliente.includes(cid)) return 'acaba de jugar';
   const u = usoAbierto(mid);
   if (u && u.id !== ignorarUso && personas(u).includes(cid)) return 'ya está jugando aquí';
   const e = esperaDe(mid).find(x => x.id !== ignorarEspera && personas(x).includes(cid));
   if (e) return `ya espera con ${nombreDe(e.responsable_id)}`;
+  if (paraEspera) {
+    const hoy = hoyISO();
+    const otra = E.espera.find(x => x.fecha === hoy && x.material_id !== mid && x.id !== ignorarEspera && personas(x).includes(cid));
+    if (otra) return `ya espera en ${materialPorId(otra.material_id)?.nombre || 'otro juego'}`;
+  }
   return null;
 }
 
@@ -215,10 +221,11 @@ function htmlEspera(m, { conElegir = false } = {}) {
       <button type="button" class="btn btn-borde btn-peq" data-esp-anadir>+ Apuntar grupo</button></div>
     ${es.length ? es.map((e, i) => `<div class="espera-item ${i === 0 ? 'primero' : ''}">
         <span class="pos mono">${i + 1}</span>
-        <span class="info"><span class="nombre">🔑 ${esc(nombreDe(e.responsable_id))}${(e.grupo || []).length ? ` <small>+${e.grupo.length}</small>` : ''}</span>
+        <span class="info"><span class="nombre">🔑 ${esc(nombreDe(e.responsable_id))}${(e.grupo || []).length ? ` <small>+${e.grupo.length}</small>` : ''}${e.creado_por === 'Mi Refugio' ? ' <small title="Se apuntó desde su móvil">📱</small>' : ''}</span>
           ${(e.grupo || []).length ? `<span class="meta">${e.grupo.map(nombreDe).map(esc).join(', ')}</span>` : ''}
           <span class="meta mono">desde ${horaDe(e.creado)} · ${duracion(minutosDesde(e.creado))}</span></span>
-        ${conElegir ? `<button type="button" class="btn btn-verde btn-peq" data-esp-elegir="${e.id}">Turno</button>` : ''}
+        ${conElegir ? `<button type="button" class="mini" data-esp-editar="${e.id}" aria-label="Añadir gente al grupo y dar turno" title="Añadir gente y dar turno">✏️</button>
+          <button type="button" class="btn btn-verde btn-peq" data-esp-elegir="${e.id}">Turno</button>` : ''}
         <button type="button" class="mini" data-esp-quitar="${e.id}" aria-label="Quitar de la lista">✕</button>
       </div>`).join('') : '<p class="resumen">Nadie esperando.</p>'}
   </div>`;
@@ -237,6 +244,7 @@ function enlazarEspera(m, volver, alElegir) {
     } catch (er) { aviso(errorHumano(er), true); }
   }));
   if (alElegir) $$('[data-esp-elegir]').forEach(b => b.addEventListener('click', () => alElegir(Number(b.dataset.espElegir))));
+  $$('[data-esp-editar]').forEach(b => b.addEventListener('click', () => abrirTurnoEditar(m, Number(b.dataset.espEditar))));
 }
 
 // Da entrada de hoy si alguien coge material sin haberse apuntado en la puerta
@@ -311,6 +319,7 @@ function abrirTurno(m) {
         ${(sig.grupo || []).length ? `<span class="meta">Con: ${sig.grupo.map(nombreDe).map(esc).join(', ')}</span>` : ''}
         <span class="meta mono">Esperando desde ${horaDe(sig.creado)} · ${duracion(minutosDesde(sig.creado))}</span>
         <button class="btn btn-verde btn-grande" id="tn-siguiente">▶ Dar turno a ${esc(nombreDe(sig.responsable_id))}${(sig.grupo || []).length ? ` +${sig.grupo.length}` : ''}</button>
+        <button class="btn btn-borde" id="tn-editar">✏️ Añadir gente al grupo y dar turno</button>
       </div>` : ''}
     ${htmlEspera(m, { conElegir: true })}
     ${sig ? `<details id="tn-otro"><summary class="btn btn-borde" style="list-style:none">Otro grupo (no está en la lista)</summary>
@@ -319,7 +328,10 @@ function abrirTurno(m) {
       <button class="btn btn-verde btn-grande" id="tn-ok" disabled>Elige quién juega</button>
     </div>${sig ? '</details>' : ''}`);
 
-  if (sig) $('#tn-siguiente').addEventListener('click', ev => darTurnoEspera(m, sig.id, ev.currentTarget));
+  if (sig) {
+    $('#tn-siguiente').addEventListener('click', ev => darTurnoEspera(m, sig.id, ev.currentTarget));
+    $('#tn-editar').addEventListener('click', () => abrirTurnoEditar(m, sig.id));
+  }
   enlazarEspera(m, () => abrirTurno(m), id => darTurnoEspera(m, id));
 
   const bloqueo = { saliente };
@@ -343,15 +355,47 @@ function abrirTurno(m) {
   });
 }
 
+/* ---------- Dar turno a un grupo de la lista, añadiendo o quitando gente ---------- */
+function abrirTurnoEditar(m, esperaId) {
+  const e = E.espera.find(x => x.id === esperaId);
+  if (!e) return abrirTurno(m);
+  const pos = esperaDe(m.id).indexOf(e) + 1;
+  abrirModal(`${m.icono} Turno nº ${pos} · ${m.nombre}`, `
+    <p class="resumen">Añade a quien juega con ${esc(nombreDe(e.responsable_id))} (o toca la 🔑 de otro para cambiar el responsable).</p>
+    <div id="te-sel"></div>
+    <button class="btn btn-verde btn-grande" id="te-ok">Dar turno</button>
+    <button class="btn btn-borde" id="te-volver">Volver</button>`);
+  const sel = selectorGrupo($('#te-sel'), {
+    mid: m.id,
+    iniciales: personas(e),
+    bloqueo: { ignorarEspera: e.id },
+    alCambiar: s => {
+      const b = $('#te-ok'); if (!b) return;
+      b.disabled = !s.length;
+      b.textContent = s.length ? `▶ Dar ${m.nombre} a ${nombreDe(s[0])}${s.length > 1 ? ` +${s.length - 1}` : ''}` : 'Elige quién juega';
+    }
+  });
+  $('#te-volver').addEventListener('click', () => abrirTurno(m));
+  $('#te-ok').addEventListener('click', async (ev) => {
+    if (usoAbierto(m.id)) { aviso('Ese juego ya está en uso. Primero hay que recibirlo y revisarlo.', true); return; }
+    const ids = sel.valor();
+    const mal = sel.errores();
+    if (mal.length) { aviso(`${nombreDe(mal[0][0])}: ${mal[0][1]}. Quítalo del grupo.`, true); vibrar(120); return; }
+    const btn = ev.currentTarget; btn.disabled = true;
+    if (!(await darTurno(m, ids, e.id))) btn.disabled = false;
+  });
+}
+
 /* ---------- Apuntar un grupo a la lista de espera ---------- */
 function abrirApuntarEspera(m, volver) {
   abrirModal(`⏳ Espera · ${m.nombre}`, `
-    <p class="resumen">Quien ya está jugando a ${esc(m.nombre)} o ya espera en esta lista no se puede apuntar.</p>
+    <p class="resumen">Quien ya está jugando a ${esc(m.nombre)} o ya está en otra lista no se puede apuntar (una reserva a la vez).</p>
     <div id="ae-sel"></div>
     <button class="btn btn-verde btn-grande" id="ae-ok" disabled>Apuntar a la lista</button>
     <button class="btn btn-borde" id="ae-volver">Volver</button>`);
   const sel = selectorGrupo($('#ae-sel'), {
     mid: m.id,
+    bloqueo: { paraEspera: true },
     alCambiar: s => { $('#ae-ok').disabled = !s.length; }
   });
   setTimeout(() => $('#ae-sel .sel-buscar')?.focus(), 250);

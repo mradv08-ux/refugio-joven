@@ -48,3 +48,5 @@
 .pase-cod{font-size:1.6rem;font-weight:700;letter-spacing:.15em;margin:0}
 .pase-ayuda{color:#555;margin:0;text-align:center}
 .pase .btn-borde{color:#111;border-color:#bbb;min-width:200px}
+.btn-reserva{width:100%}
+#m-app .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
