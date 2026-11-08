@@ -63,6 +63,7 @@
     </button>
   </header>
   <main class="vista" id="m-main">
+    <button class="btn btn-verde btn-grande pase-btn" id="m-pase-btn">🎟️ Enseñar mi pase para entrar</button>
     <div id="m-estado"></div>
     <div id="m-yo"></div>
     <h2 class="seccion">Juegos y listas de espera</h2>
@@ -73,6 +74,16 @@
   </main>
 </div>
 
+<!-- ---------- Pase a pantalla completa ---------- -->
+<div id="m-pase" class="pase oculto" role="dialog" aria-modal="true" aria-label="Mi pase">
+  <p class="pase-nombre" id="m-pase-nombre"></p>
+  <div class="pase-qr" id="m-pase-qr"></div>
+  <p class="pase-cod mono" id="m-pase-cod"></p>
+  <p class="pase-ayuda">Enséñalo en recepción · Sube el brillo si no lo leen</p>
+  <button class="btn btn-borde btn-grande" id="m-pase-cerrar">Cerrar</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="config.js"></script>
 <script src="mi.js"></script>
 </body>

@@ -124,6 +124,27 @@ function pintar() {
       <p>${esc(f.motivo)}</p></div></div>`).join('')}</div>` : '';
 }
 
+/* ---------- Pase con QR ---------- */
+function abrirPase() {
+  if (!codigo || !datos) return;
+  const base = location.href.split('#')[0].split('?')[0];
+  let svg = '';
+  try {
+    const qr = window.qrcode(0, 'M');
+    qr.addData(`${base}#${codigo}`);
+    qr.make();
+    svg = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+  } catch (e) {
+    svg = '<p>No se ha podido dibujar el QR. Di tu código en recepción.</p>';
+  }
+  $('#m-pase-qr').innerHTML = svg;
+  $('#m-pase-nombre').textContent = datos.nombre;
+  $('#m-pase-cod').textContent = bonito(codigo);
+  $('#m-pase').classList.remove('oculto');
+}
+$('#m-pase-btn').addEventListener('click', abrirPase);
+$('#m-pase-cerrar').addEventListener('click', () => $('#m-pase').classList.add('oculto'));
+
 /* ---------- Eventos ---------- */
 $('#m-codigo').addEventListener('input', ev => {
   const c = limpiar(ev.target.value);

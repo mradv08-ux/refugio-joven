@@ -352,12 +352,15 @@ function pintarChavales() {
 
 /* ---------- Ventana emergente ---------- */
 function abrirModal(titulo, html) {
+  if (window.alCerrarModal) { const f = window.alCerrarModal; window.alCerrarModal = null; try { f(); } catch (e) { /* nada */ } }
   $('#modal-titulo').textContent = titulo;
   $('#modal-cuerpo').innerHTML = html;
   $('#modal').classList.remove('oculto');
   document.body.style.overflow = 'hidden';
 }
 function cerrarModal() {
+  // Si la ventana tenía algo encendido (la cámara del escáner), se apaga
+  if (window.alCerrarModal) { const f = window.alCerrarModal; window.alCerrarModal = null; try { f(); } catch (e) { /* nada */ } }
   $('#modal').classList.add('oculto');
   document.body.style.overflow = '';
 }
@@ -713,6 +716,7 @@ function enlazar() {
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrarModal(); });
 
   // Chavales
+  $('#btn-escanear').addEventListener('click', abrirEscaner);
   $('#chav-buscar').addEventListener('input', pintarChavales);
   $('#btn-nuevo-chaval').addEventListener('click', () => abrirNuevo($('#chav-buscar').value, false));
   $$('.filtro').forEach(b => b.addEventListener('click', () => {

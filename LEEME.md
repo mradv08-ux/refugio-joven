@@ -4,7 +4,7 @@ App de The Wild Side para el Centro Joven de San Juan del Puerto: registrar a lo
 
 ## Qué hace
 
-- **Puerta**: escribes el nombre, pulsas **Entrar** y listo. Si no existe, sale **Apuntar como nuevo** (nombre + edad). Arriba marcas quién curra ese día.
+- **Puerta**: pulsa **📷 QR** y escanea el pase del chaval (en su Mi Refugio, botón **🎟️ Enseñar mi pase**): entra solo. Se queda abierto para ir pasando uno tras otro. También puedes escribir el nombre, pulsas **Entrar** y listo. Si no existe, sale **Apuntar como nuevo** (nombre + edad). Arriba marcas quién curra ese día.
 - **Nombres repetidos**: si ya hay alguien que se llama igual (aunque cambie una tilde o mayúscula), la app no deja guardarlo y te pide añadir apellido, inicial o apodo. Si solo se parece (dos "Carlos"), te avisa para que no lo apuntes dos veces.
 - **Chavales**: lista con días que han venido y faltas. Toca uno para ver su ficha, cambiar datos o **Poner falta** (leve, moderada o grave). Al darle entrada a alguien con faltas graves, la app avisa.
 - **Material**: billar, ordenador 1 y 2, futbolín, PS5, ping pong y mando de la TV.
