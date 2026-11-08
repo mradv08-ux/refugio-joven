@@ -11,10 +11,10 @@ App de The Wild Side para el Centro Joven de San Juan del Puerto: registrar a lo
   - **Dar turno**: tocas el juego y vas tocando nombres. El primero es el **responsable 🔑**; los demás, su grupo. Con la 🔑 de otro lo cambias.
   - **No acaparar**: quien está jugando a un juego no puede apuntarse a la espera de ese juego ni entrar en el turno siguiente (sale "acaba de jugar"). Nadie puede estar en dos grupos de la misma lista.
   - **Lista de espera** en cada juego: **+ Apuntar grupo**. Al dar el siguiente turno, se cargan solos los primeros de la lista.
-  - **Tiempo**: PS5 y ordenadores 1 h; billar, futbolín y ping pong 30 min. Solo cuenta si hay alguien esperando. A 5 min del final se pone amarillo; si se pasan, **rojo** y el reloj sigue hasta el cambio.
-  - **Siguiente turno**: revisas que está bien y das el juego al siguiente grupo (el reloj empieza de cero).
+  - **Tiempo**: PS5 y ordenadores 1 h; billar, futbolín y ping pong 30 min. El tiempo que lleva cada grupo se ve siempre; el límite solo cuenta si hay alguien esperando. A 5 min del final se pone amarillo; si se pasan, **rojo** y el reloj sigue hasta el cambio.
+  - **Recibir y revisar**: el grupo entrega el material en recepción, lo revisáis (todo bien / algo roto / falta algo, con falta al responsable) y el juego queda libre. Nunca pasa solo al siguiente.
+  - **Dar turno al siguiente**: con el juego libre, toca el juego y pulsa **▶ Dar turno a…**: un toque y se lo das al nº 1 de la lista.
   - **Solo responsable**: mismo grupo, cambia quién se hace cargo (los dos en recepción). El reloj **no** se reinicia.
-  - **Devolver y revisar**: todo bien / algo roto / falta algo, con falta al responsable. Si hay gente esperando, pasa directo a dar el turno.
 - **Turnos y €**: días de apertura del mes (viernes, sábado y domingo), quién trabajó cada uno, y calculadora de reparto: pones el dinero y te dice cuánto le toca a cada uno. Botón para copiar el resumen y pegarlo en WhatsApp.
 
 ## Quién entra

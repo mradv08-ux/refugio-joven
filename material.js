@@ -48,11 +48,11 @@ function estadoTiempo(m, u) {
   const min = minutosDesde(u.turno_inicio || u.inicio);
   const esperan = esperaDe(m.id).length;
   const lim = m.limite_min;
-  if (!lim) return { min, clase: 'ocupado', txt: duracion(min) };
-  if (!esperan) return { min, clase: 'ocupado', txt: `${duracion(min)} · nadie espera` };
-  if (min >= lim) return { min, clase: 'pasado', txt: `${duracion(min)} · ¡+${duracion(min - lim)}!` };
-  if (min >= lim - 5) return { min, clase: 'aviso', txt: `${duracion(min)} · quedan ${lim - min} min` };
-  return { min, clase: 'ocupado', txt: `${duracion(min)} de ${duracion(lim)}` };
+  if (!lim) return { min, clase: 'ocupado', txt: 'Sin límite' };
+  if (!esperan) return { min, clase: 'ocupado', txt: `Límite ${duracion(lim)} si hay espera` };
+  if (min >= lim) return { min, clase: 'pasado', txt: `¡Pasados ${duracion(min - lim)}!` };
+  if (min >= lim - 5) return { min, clase: 'aviso', txt: `Quedan ${lim - min} min` };
+  return { min, clase: 'ocupado', txt: `Quedan ${lim - min} min` };
 }
 
 // ¿Por qué no puede alguien entrar en un turno o en la espera de este juego?
@@ -87,16 +87,17 @@ function pintarMaterial() {
       return `<button class="puesto libre ${esp ? 'con-espera' : ''}" data-material="${esc(m.id)}" aria-label="${esc(m.nombre)}: libre">
         <span class="ico">${m.icono}</span><span class="tit">${esc(m.nombre)}</span>
         <span class="estado">● Libre</span>
-        <span class="det">${esp ? `<b class="espera-n">⏳ ${esp} esperando · dar turno</b>` : lim}</span>
+        <span class="det">${esp ? `<b class="espera-n">⏳ ${esp} esperando · ▶ dar turno</b>` : lim}</span>
       </button>`;
     }
     const t = estadoTiempo(m, u);
     const grave = resumenFaltas(u.responsable_id).grave > 0;
     const n = (u.grupo || []).length;
-    return `<button class="puesto ${t.clase}" data-material="${esc(m.id)}" aria-label="${esc(m.nombre)}: en uso por ${esc(nombreDe(u.responsable_id))}, ${esc(t.txt)}">
+    return `<button class="puesto ${t.clase}" data-material="${esc(m.id)}" aria-label="${esc(m.nombre)}: en uso por ${esc(nombreDe(u.responsable_id))}, lleva ${duracion(t.min)}. ${esc(t.txt)}">
       ${grave ? '<span class="alarma" title="El responsable tiene faltas graves">🚨</span>' : ''}
       <span class="ico">${m.icono}</span><span class="tit">${esc(m.nombre)}</span>
-      <span class="estado">● ${esc(t.txt)}</span>
+      <span class="crono mono">⏱ ${duracion(t.min)}</span>
+      <span class="estado">${esc(t.txt)}</span>
       <span class="resp">🔑 ${esc(nombreDe(u.responsable_id))}${n ? ` +${n}` : ''}</span>
       <span class="det">${esp ? `<b class="espera-n">⏳ ${esp} esperando</b>` : 'Nadie esperando'}</span>
     </button>`;
@@ -253,80 +254,92 @@ async function borrarEspera(id) {
   E.espera = E.espera.filter(x => x.id !== id);
 }
 
-/* ---------- Dar turno (juego libre, o siguiente turno si está en uso) ---------- */
-// esperaElegida: id de la lista de espera a usar; null = grupo nuevo; sin pasar = los primeros
-function abrirTurno(m, esperaElegida) {
-  const u = usoAbierto(m.id);           // si hay uso, es "siguiente turno"
-  const es = esperaDe(m.id);
-  const desdeEspera = esperaElegida !== undefined ? esperaElegida : (es[0]?.id || null);
-  const saliente = u ? personas(u) : [];
-  abrirModal(`${m.icono} ${u ? 'Siguiente turno · ' : ''}${m.nombre}`, `
-    ${u ? `<div class="alerta alerta-suave">Sale el grupo de <b>${esc(nombreDe(u.responsable_id))}</b> (${duracion(minutosDesde(u.turno_inicio))}).
-      <label class="check" style="margin-top:8px"><input type="checkbox" id="tn-revisado" checked> Revisado: está todo bien</label>
-      <small>Si algo está roto o falta, desmarca y ve a <b>Devolver y revisar</b>.</small></div>` : ''}
-    <div id="tn-origen" class="resumen"></div>
-    <div id="tn-sel"></div>
-    <button class="btn btn-verde btn-grande" id="tn-ok" disabled>Dar turno</button>
-    ${htmlEspera(m, { conElegir: true })}
-    ${u ? '<button class="btn btn-borde" id="tn-volver">Volver</button>' : ''}`);
+/* ---------- Dar turno (solo con el juego libre y ya revisado) ---------- */
+// Último grupo que lo tuvo hoy: si hay espera, no puede volver a cogerlo como grupo nuevo
+function ultimoGrupo(mid) {
+  const hoy = hoyISO();
+  const ult = E.usos.find(x => x.material_id === mid && x.fin && x.fecha === hoy);
+  return ult ? personas(ult) : [];
+}
 
-  const bloqueo = () => ({ ignorarUso: null, ignorarEspera: desdeEspera, saliente });
+async function darTurno(m, ids, esperaId = null) {
+  try {
+    const { data, error } = await E.sb.from('cj_usos')
+      .insert({ material_id: m.id, responsable_id: ids[0], grupo: ids.slice(1), fecha: hoyISO() })
+      .select(USOS_CAMPOS).single();
+    if (error) throw error;
+    E.usos.unshift(data);
+    await borrarEspera(esperaId);
+    await asegurarEntradaHoy(ids);
+    vibrar();
+    cerrarModal();
+    aviso(`${m.icono} ${m.nombre} para ${nombreDe(ids[0])}${ids.length > 1 ? ` +${ids.length - 1}` : ''} 🔑`);
+    pintarTodo();
+    return true;
+  } catch (e) {
+    if (e.code === '23505') { await refrescar(true); cerrarModal(); aviso('Alguien acaba de darlo. Mira quién lo tiene.', true); }
+    else { aviso(errorHumano(e), true); refrescar(true); }
+    return false;
+  }
+}
+
+// Da el turno a un grupo de la lista de espera con un toque
+async function darTurnoEspera(m, esperaId, btn) {
+  const e = E.espera.find(x => x.id === esperaId);
+  if (!e) return;
+  const pos = esperaDe(m.id).indexOf(e);
+  if (pos > 0 && !confirm(`${nombreDe(e.responsable_id)} es el nº ${pos + 1}. ¿Darle el turno antes que al nº 1?`)) return;
+  const ids = personas(e).filter(id => chaval(id));
+  const mal = ids.map(id => [id, motivoBloqueo(m.id, id, { ignorarEspera: e.id })]).filter(x => x[1]);
+  if (mal.length) { aviso(`${nombreDe(mal[0][0])}: ${mal[0][1]}`, true); return; }
+  if (btn) btn.disabled = true;
+  if (!(await darTurno(m, ids, e.id)) && btn) btn.disabled = false;
+}
+
+function abrirTurno(m) {
+  if (usoAbierto(m.id)) return abrirEnUso(m, usoAbierto(m.id));
+  const es = esperaDe(m.id);
+  const sig = es[0];
+  const saliente = es.length ? ultimoGrupo(m.id) : [];
+  abrirModal(`${m.icono} ${m.nombre}`, `
+    ${sig ? `<div class="siguiente">
+        <span class="etiqueta">▶ Siguiente en la lista</span>
+        <span class="nombre">🔑 ${esc(nombreDe(sig.responsable_id))}</span>
+        ${(sig.grupo || []).length ? `<span class="meta">Con: ${sig.grupo.map(nombreDe).map(esc).join(', ')}</span>` : ''}
+        <span class="meta mono">Esperando desde ${horaDe(sig.creado)} · ${duracion(minutosDesde(sig.creado))}</span>
+        <button class="btn btn-verde btn-grande" id="tn-siguiente">▶ Dar turno a ${esc(nombreDe(sig.responsable_id))}${(sig.grupo || []).length ? ` +${sig.grupo.length}` : ''}</button>
+      </div>` : ''}
+    ${htmlEspera(m, { conElegir: true })}
+    ${sig ? `<details id="tn-otro"><summary class="btn btn-borde" style="list-style:none">Otro grupo (no está en la lista)</summary>
+      <div class="columna" style="margin-top:10px"><p class="resumen">⚠️ Se saltan la espera.${saliente.length ? ' El último grupo no puede volver a cogerlo.' : ''}</p>` : '<div class="columna">'}
+      <div id="tn-sel"></div>
+      <button class="btn btn-verde btn-grande" id="tn-ok" disabled>Elige quién juega</button>
+    </div>${sig ? '</details>' : ''}`);
+
+  if (sig) $('#tn-siguiente').addEventListener('click', ev => darTurnoEspera(m, sig.id, ev.currentTarget));
+  enlazarEspera(m, () => abrirTurno(m), id => darTurnoEspera(m, id));
+
+  const bloqueo = { saliente };
   const sel = selectorGrupo($('#tn-sel'), {
     mid: m.id,
-    iniciales: desdeEspera ? personas(E.espera.find(e => e.id === desdeEspera)) : [],
-    bloqueo: bloqueo(),
+    bloqueo,
     alCambiar: s => {
       const ok = s.length > 0;
       $('#tn-ok').disabled = !ok;
       $('#tn-ok').textContent = ok ? `Dar ${m.nombre} a ${nombreDe(s[0])}${s.length > 1 ? ` +${s.length - 1}` : ''}` : 'Elige quién juega';
     }
   });
-  const origen = () => {
-    const e = E.espera.find(x => x.id === desdeEspera);
-    $('#tn-origen').innerHTML = e
-      ? `Turno para el <b>nº ${esperaDe(m.id).indexOf(e) + 1}</b> de la lista. Puedes quitar o añadir gente. <button type="button" class="btn-enlace" id="tn-nuevo">Es otro grupo</button>`
-      : (es.length ? '⚠️ Grupo que <b>no</b> está en la lista: se salta la espera.' : '');
-    $('#tn-nuevo')?.addEventListener('click', () => abrirTurno(m, null));
-  };
-  origen();
-  if (!desdeEspera) setTimeout(() => $('#tn-sel .sel-buscar')?.focus(), 250);
-
-  const volver = () => abrirTurno(m, E.espera.some(x => x.id === desdeEspera) ? desdeEspera : undefined);
-  enlazarEspera(m, volver, id => abrirTurno(m, id));
-  $('#tn-volver')?.addEventListener('click', () => abrirEnUso(m, u));
+  if (!sig) setTimeout(() => $('#tn-sel .sel-buscar')?.focus(), 250);
 
   $('#tn-ok').addEventListener('click', async (ev) => {
-    if (u && !$('#tn-revisado').checked) { abrirDevolver(m, u); return; }
     const ids = sel.valor();
-    const mal = ids.map(id => [id, motivoBloqueo(m.id, id, bloqueo())]).filter(x => x[1]);
+    const mal = sel.errores();
     if (mal.length) { aviso(`${nombreDe(mal[0][0])}: ${mal[0][1]}. Quítalo del grupo.`, true); vibrar(120); return; }
     const btn = ev.currentTarget; btn.disabled = true;
-    try {
-      if (u) {
-        const { data: c, error: e1 } = await E.sb.from('cj_usos')
-          .update({ fin: new Date().toISOString(), devolucion: 'turno', nota: `Turno para ${nombreDe(ids[0])}`, cerrado_por: E.usuario.nombre })
-          .eq('id', u.id).is('fin', null).select(USOS_CAMPOS).single();
-        if (e1) throw e1;
-        Object.assign(u, c);
-      }
-      const { data, error } = await E.sb.from('cj_usos')
-        .insert({ material_id: m.id, responsable_id: ids[0], grupo: ids.slice(1), fecha: hoyISO() })
-        .select(USOS_CAMPOS).single();
-      if (error) throw error;
-      E.usos.unshift(data);
-      await borrarEspera(desdeEspera);
-      await asegurarEntradaHoy(ids);
-      vibrar();
-      cerrarModal();
-      aviso(`${m.icono} ${m.nombre} para ${nombreDe(ids[0])}${ids.length > 1 ? ` +${ids.length - 1}` : ''} 🔑`);
-      pintarTodo();
-    } catch (e) {
-      btn.disabled = false;
-      if (e.code === '23505') { await refrescar(true); cerrarModal(); aviso('Alguien acaba de darlo. Mira quién lo tiene.', true); }
-      else { aviso(errorHumano(e), true); refrescar(true); }
-    }
+    if (!(await darTurno(m, ids))) btn.disabled = false;
   });
 }
+
 /* ---------- Apuntar un grupo a la lista de espera ---------- */
 function abrirApuntarEspera(m, volver) {
   abrirModal(`⏳ Espera · ${m.nombre}`, `
@@ -372,15 +385,12 @@ function abrirEnUso(m, u) {
         <span class="meta">${grupo.length ? `Con: ${grupo.map(esc).join(', ')}` : 'Solo'} ${pildorasFaltas(u.responsable_id)}</span></span>
       <span class="reloj mono">${duracion(t.min)}${m.limite_min ? `<small>de ${duracion(m.limite_min)}</small>` : ''}</span>
     </div>
-    ${t.clase === 'pasado' ? `<div class="alerta alerta-duplicado">⏱ <b>Se han pasado del tiempo</b> y hay ${esp} grupo${esp > 1 ? 's' : ''} esperando. Toca dar el turno.</div>` : ''}
-    <button class="btn ${esp ? 'btn-llama' : 'btn-verde'} btn-grande" id="eu-turno">▶ Siguiente turno${esp ? ` (${esp} esperando)` : ''}</button>
-    <div class="fila-botones">
-      <button class="btn btn-borde" id="eu-devolver">Devolver y revisar</button>
-      <button class="btn btn-borde" id="eu-cambiar">🔁 Solo responsable</button>
-    </div>
+    <p class="resumen">Empezó a las ${horaDe(u.turno_inicio || u.inicio)} · lo entregó ${esc(u.abierto_por || '—')}</p>
+    ${t.clase === 'pasado' ? `<div class="alerta alerta-duplicado">⏱ <b>Se han pasado del tiempo</b> y hay ${esp} grupo${esp > 1 ? 's' : ''} esperando. Que vengan a recepción a entregarlo.</div>` : ''}
+    <button class="btn ${t.clase === 'pasado' ? 'btn-llama' : 'btn-verde'} btn-grande" id="eu-devolver">📥 Recibir y revisar</button>
+    <button class="btn btn-borde" id="eu-cambiar">🔁 Cambiar solo el responsable</button>
     ${htmlEspera(m)}
     <button class="btn-enlace" id="eu-ficha">Ver ficha de ${esc(nombreDe(u.responsable_id))}</button>`);
-  $('#eu-turno').addEventListener('click', () => abrirTurno(m));
   $('#eu-devolver').addEventListener('click', () => abrirDevolver(m, u));
   $('#eu-cambiar').addEventListener('click', () => abrirCambio(m, u));
   $('#eu-ficha').addEventListener('click', () => abrirFicha(u.responsable_id));
@@ -392,8 +402,8 @@ function abrirDevolver(m, u) {
   let estado = 'bien';
   let grav = 'leve';
   const anterior = E.usos.find(x => x.material_id === m.id && x.fin && x.id !== u.id);
-  abrirModal(`Devolver ${m.nombre}`, `
-    <p class="resumen">Revisa que esté todo como se entregó.</p>
+  abrirModal(`📥 Recibir ${m.nombre}`, `
+    <p class="resumen">Que <b>${esc(nombreDe(u.responsable_id))}</b> lo entregue en recepción. Revisad que esté todo como se dio.</p>
     <div class="devol" role="radiogroup" aria-label="Estado">
       <button type="button" data-d="bien" class="on" role="radio" aria-checked="true"><span>✅</span>Todo bien</button>
       <button type="button" data-d="danado" role="radio" aria-checked="false"><span>⚠️</span>Algo roto</button>
@@ -412,7 +422,7 @@ function abrirDevolver(m, u) {
         <button type="button" data-g="grave" role="radio" aria-checked="false">Grave</button>
       </div>
     </div>
-    <button class="btn btn-verde btn-grande" id="dv-ok">Confirmar devolución</button>
+    <button class="btn btn-verde btn-grande" id="dv-ok">Recibido, queda libre</button>
     <button class="btn btn-borde" id="dv-volver">Volver</button>`);
 
   $$('.devol button').forEach(b => b.addEventListener('click', () => {
@@ -452,8 +462,9 @@ function abrirDevolver(m, u) {
       vibrar(estado === 'bien' ? 30 : 80);
       pintarTodo();
       const esp = esperaDe(m.id).length;
-      aviso(estado === 'bien' ? `${m.nombre} devuelto ✅` : `${m.nombre} devuelto con incidencia${faltaId ? ' y falta apuntada' : ''}`, estado !== 'bien');
-      if (esp) abrirTurno(m); else cerrarModal();   // si hay espera, directo a dar el siguiente turno
+      const sig = esp ? ` · siguiente: ${nombreDe(esperaDe(m.id)[0].responsable_id)}` : '';
+      aviso(estado === 'bien' ? `${m.nombre} libre ✅${sig}` : `${m.nombre} con incidencia${faltaId ? ' y falta apuntada' : ''}${sig}`, estado !== 'bien');
+      cerrarModal();
     } catch (e) {
       btn.disabled = false;
       aviso(errorHumano(e), true);

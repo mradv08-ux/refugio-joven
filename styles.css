@@ -323,3 +323,12 @@ input[type=number]{-moz-appearance:textfield}
 .elegido.reloj-aviso{border-color:var(--flame-hi);background:rgba(255,204,46,.14)}
 .elegido.reloj-pasado{border-color:var(--grave);background:rgba(255,59,48,.2)}
 .elegido.reloj-pasado .reloj{color:#ff6b62}
+.puesto .crono{font-size:1.45rem;font-weight:700;line-height:1;color:var(--fg)}
+.puesto.pasado .crono{color:#fff}
+.puesto .estado{text-transform:none;letter-spacing:0;font-size:.82rem}
+.puesto.libre .estado{text-transform:uppercase;letter-spacing:.05em}
+.siguiente{display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:14px;border:1.5px solid var(--green);background:linear-gradient(180deg,rgba(0,200,55,.14),transparent 80%),var(--panel-2)}
+.siguiente .nombre{font-size:1.25rem;font-weight:800}
+.siguiente .btn{margin-top:8px}
+details > summary::-webkit-details-marker{display:none}
+details > summary{width:100%}
