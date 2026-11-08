@@ -1,0 +1,42 @@
+/* =========================================================
+   Mi Refugio · portal de los chavales
+   ========================================================= */
+#m-app{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+#m-main{max-width:560px;margin:0 auto;padding:14px 16px}
+.centro-txt{text-align:center}
+.codigo-input{text-align:center;font-size:1.5rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+
+.estado-caja{display:flex;gap:12px;align-items:center;padding:16px;border-radius:16px;border:1.5px solid var(--c);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%),var(--panel);box-shadow:var(--shadow)}
+.estado-caja .emoji{font-size:2.4rem;line-height:1}
+.estado-caja b{display:block;font-family:var(--display);font-weight:400;font-size:1.35rem;line-height:1.15}
+.estado-caja span{color:var(--muted);font-size:.92rem}
+.dias{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+
+.yo-caja{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.yo-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--gold);background:linear-gradient(90deg,var(--gold-soft),transparent 80%),var(--panel)}
+.yo-item.jugando{border-color:var(--green);background:linear-gradient(90deg,var(--green-soft),transparent 80%),var(--panel)}
+.yo-item .ico{font-size:1.8rem}
+.yo-item .grande{font-family:var(--display);font-size:1.25rem;line-height:1.1}
+.yo-item .meta{color:var(--muted)}
+.yo-item .num{margin-left:auto;font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--gold)}
+.yo-item.jugando .num{color:var(--green-ink);font-size:1.3rem}
+
+.juego{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.juego.libre{border-color:rgba(0,200,55,.45)}
+.juego.ocupado{border-color:var(--flame)}
+.juego.pasado{border-color:var(--grave);background:linear-gradient(180deg,rgba(255,59,48,.18),transparent 70%),var(--panel)}
+.juego.mio{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(198,167,76,.35)}
+.juego-cab{display:flex;align-items:center;gap:10px}
+.juego-cab .ico{font-size:1.7rem}
+.juego-cab .tit{font-family:var(--display);font-size:1.15rem;flex:1}
+.juego-cab .estado{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.juego.libre .estado{color:var(--green-ink)}
+.juego.ocupado .estado,.juego.pasado .estado{color:var(--flame-hi)}
+.juego .crono{font-family:var(--mono);font-weight:700;font-size:1.05rem}
+.cola{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none}
+.cola li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:var(--panel-2);font-size:.92rem}
+.cola li .pos{font-family:var(--mono);font-weight:700;color:var(--gold);width:20px;text-align:center}
+.cola li.yo{background:var(--gold-soft);border:1px solid var(--gold);font-weight:800}
+.cola li small{color:var(--muted);margin-left:auto}
+.sin-cola{color:var(--muted);font-size:.88rem;margin:0}

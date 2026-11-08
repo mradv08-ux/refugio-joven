@@ -339,3 +339,9 @@ details > summary{width:100%}
 .puesto:has(.puesto-cuerpo:active){transform:scale(.98)}
 .puesto-espera{border:0;border-top:1px dashed rgba(198,167,76,.5);background:rgba(198,167,76,.12);color:var(--gold);font-weight:800;min-height:42px;cursor:pointer;font-size:.88rem}
 .puesto-espera:active{background:rgba(198,167,76,.25)}
+/* Acceso de los chavales (ficha) */
+.codigo-caja{border:1px dashed var(--gold);border-radius:12px;padding:10px 12px;background:var(--gold-soft)}
+.codigo-caja summary{cursor:pointer;font-weight:800;color:var(--gold);min-height:32px;display:flex;align-items:center}
+.qr{background:#fff;border-radius:12px;padding:8px;width:min(70vw,240px);margin:0 auto}
+.qr svg{display:block;width:100%;height:auto}
+.codigo-grande{text-align:center;font-size:1.7rem;font-weight:700;letter-spacing:.15em;color:var(--fg)}

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mi Refugio · Centro Joven</title>
+  <meta name="description" content="Tu zona en el Centro Joven de San Juan del Puerto: tus días, tu comportamiento y las listas de espera de los juegos.">
+  <meta name="theme-color" content="#0b0f0c">
+  <meta name="robots" content="noindex">
+  <link rel="manifest" href="mi.webmanifest">
+  <link rel="icon" href="img/icono-192.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mi Refugio">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mi.css">
+</head>
+<body>
+
+<!-- ---------- Cargando ---------- -->
+<section id="m-carga" class="pantalla centro">
+  <img src="img/logo.png" alt="The Wild Side" class="logo-grande pulso">
+  <p class="marca">Buscando tu refugio…</p>
+  <div id="m-carga-error" class="oculto">
+    <p class="aviso-texto" id="m-carga-error-texto">No hay conexión. Revisa la cobertura y vuelve a intentarlo.</p>
+    <button class="btn btn-verde" id="m-reintentar">Reintentar</button>
+  </div>
+</section>
+
+<!-- ---------- Entrar con código ---------- -->
+<section id="m-login" class="pantalla centro oculto">
+  <img src="img/logo.png" alt="The Wild Side" class="logo-grande">
+  <h1 class="titulo-marca">Mi Refugio</h1>
+  <p class="sub">Centro Joven · San Juan del Puerto</p>
+  <form id="m-form" class="tarjeta form" autocomplete="off">
+    <label>Tu código
+      <input id="m-codigo" class="codigo-input mono" required inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="9" placeholder="XXXX-XXXX">
+    </label>
+    <button class="btn btn-verde btn-grande" type="submit">Entrar</button>
+    <p class="mensaje" id="m-msg" role="status"></p>
+    <p class="resumen">¿No tienes código? Pídeselo al equipo en recepción: te enseñan un QR y listo.</p>
+  </form>
+  <p class="pie">by The Wild Side · <a href="legal.html">Privacidad</a></p>
+</section>
+
+<!-- ---------- Mi zona ---------- -->
+<div id="m-app" class="oculto">
+  <header class="cabecera">
+    <img src="img/logo.png" alt="The Wild Side" class="logo-cab">
+    <div class="cab-texto">
+      <span class="titulo-cab">Mi Refugio</span>
+      <span class="sub-cab" id="m-nombre"></span>
+    </div>
+    <button class="btn-icono" id="m-refrescar" aria-label="Actualizar">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    </button>
+    <button class="btn-icono" id="m-salir" aria-label="Salir">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M10 17v-3H3v-4h7V7l5 5-5 5zm2-15h7a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-7v-2h7V4h-7V2z"/></svg>
+    </button>
+  </header>
+  <main class="vista" id="m-main">
+    <div id="m-estado"></div>
+    <div id="m-yo"></div>
+    <h2 class="seccion">Juegos y listas de espera</h2>
+    <p class="resumen">Se actualiza solo. Para apuntarte, ve a recepción.</p>
+    <div id="m-juegos" class="lista"></div>
+    <div id="m-faltas"></div>
+    <p class="pie centro-txt">by The Wild Side · Que la plaga se propague ☢️</p>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="mi.js"></script>
+</body>
+</html>

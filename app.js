@@ -147,7 +147,7 @@ function elegirDiaInicial() {
 /* ---------- Datos ---------- */
 async function cargarDatos() {
   const [ch, en, fa, tu, ma, us, es] = await Promise.all([
-    E.sb.from('cj_chavales').select('id,nombre,edad,notas,creado').order('nombre'),
+    E.sb.from('cj_chavales').select('id,nombre,edad,notas,creado,codigo').order('nombre'),
     E.sb.from('cj_entradas').select('id,chaval_id,fecha,hora,registrado_por').order('hora', { ascending: false }).limit(20000),
     E.sb.from('cj_faltas').select('id,chaval_id,fecha,gravedad,motivo,puesta_por').order('fecha', { ascending: false }),
     E.sb.from('cj_turnos').select('fecha,email'),
@@ -391,7 +391,7 @@ function abrirNuevo(nombreInicial = '', desdePuerta = false) {
     if (!(edad >= 6 && edad <= 35)) return aviso('Pon una edad entre 6 y 35', true);
     const btn = ev.submitter; btn.disabled = true;
     try {
-      const { data, error } = await E.sb.from('cj_chavales').insert({ nombre, edad }).select('id,nombre,edad,notas,creado').single();
+      const { data, error } = await E.sb.from('cj_chavales').insert({ nombre, edad }).select('id,nombre,edad,notas,creado,codigo').single();
       if (error) throw error;
       E.chavales.push(data);
       cerrarModal();
@@ -437,6 +437,8 @@ function abrirFicha(id) {
     </div>
     ${ent.length ? `<div><span class="etiqueta">Últimas visitas</span><div class="mini-cal" style="margin-top:6px">${ent.slice(0, 24).map(e => `<span>${fechaCorta(e.fecha)}</span>`).join('')}</div></div>` : ''}
 
+    ${htmlCodigoFicha(c)}
+
     <h3 class="seccion sin-margen">Faltas ${f.length ? `<span class="mono">(${f.length})</span>` : ''}</h3>
     <div class="lista">
       ${f.length ? f.map(x => `<div class="falta" style="--c:${colorG[x.gravedad]}">
@@ -464,6 +466,7 @@ function abrirFicha(id) {
     </form>`);
 
   $('#btn-poner-falta').addEventListener('click', () => abrirFalta(id));
+  enlazarCodigoFicha(c);
   $('#ed-nombre').addEventListener('input', () => avisoNombre($('#ed-nombre').value, $('#ed-aviso'), id));
   $('#form-editar').addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -473,7 +476,7 @@ function abrirFicha(id) {
     try {
       const { data, error } = await E.sb.from('cj_chavales')
         .update({ nombre, edad, notas: $('#ed-notas').value.trim() || null })
-        .eq('id', id).select('id,nombre,edad,notas,creado').single();
+        .eq('id', id).select('id,nombre,edad,notas,creado,codigo').single();
       if (error) throw error;
       Object.assign(c, data);
       aviso('Guardado');

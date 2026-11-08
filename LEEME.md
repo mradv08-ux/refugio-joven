@@ -17,6 +17,16 @@ App de The Wild Side para el Centro Joven de San Juan del Puerto: registrar a lo
   - **Solo responsable**: mismo grupo, cambia quién se hace cargo (los dos en recepción). El reloj **no** se reinicia.
 - **Turnos y €**: días de apertura del mes (viernes, sábado y domingo), quién trabajó cada uno, y calculadora de reparto: pones el dinero y te dice cuánto le toca a cada uno. Botón para copiar el resumen y pegarlo en WhatsApp.
 
+## Mi Refugio (la app de los chavales)
+
+Los chavales tienen su propia página, **solo para mirar**: `https://mradv08-ux.github.io/refugio-joven/mi.html`
+
+- **Qué ven**: si se están portando bien o tienen faltas (solo las suyas, con el motivo), sus días este mes y en total, si están jugando o en qué puesto de la lista de espera van, y todos los juegos con su tiempo y su lista de espera (los nombres de los demás salen recortados, ej. "Carlos M.").
+- **Qué no ven**: nada de otros chavales más allá del nombre recortado en las listas. No pueden apuntarse ni tocar nada: para eso, recepción.
+- **Cómo entran**: abre su ficha en **Chavales** → **📱 Su acceso a «Mi Refugio»**. Que escanee el QR con la cámara del móvil y entra directo (se queda guardado). También pueden escribir el código de 8 letras en la web.
+- **Si un código se pierde o lo comparten**: en la ficha, **Código nuevo**. El anterior deja de funcionar al momento.
+- Para tenerla como app: en su móvil, **Añadir a pantalla de inicio**.
+
 ## Quién entra
 
 Solo dos cuentas, con el **mismo correo y contraseña que en Wild Pass**:
