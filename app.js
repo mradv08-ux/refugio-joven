@@ -696,7 +696,7 @@ function enlazar() {
 
   // Clics delegados (listas que se repintan)
   document.addEventListener('click', (ev) => {
-    const el = ev.target.closest('[data-entrar],[data-quitar],[data-nuevo],[data-ficha],[data-turno],[data-material],[data-cerrar]');
+    const el = ev.target.closest('[data-entrar],[data-quitar],[data-nuevo],[data-ficha],[data-turno],[data-material],[data-espera-rapida],[data-cerrar]');
     if (!el) return;
     if (el.dataset.entrar) registrarEntrada(Number(el.dataset.entrar));
     else if (el.dataset.quitar) quitarEntrada(Number(el.dataset.quitar));
@@ -704,6 +704,7 @@ function enlazar() {
     else if (el.dataset.ficha) abrirFicha(Number(el.dataset.ficha));
     else if (el.dataset.turno) cambiarTurno(el.dataset.turno, el.dataset.fecha);
     else if (el.dataset.material) abrirMaterial(el.dataset.material);
+    else if (el.dataset.esperaRapida) { const m = materialPorId(el.dataset.esperaRapida); if (m) abrirApuntarEspera(m, cerrarModal); }
     else if (el.hasAttribute('data-cerrar')) cerrarModal();
   });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrarModal(); });
@@ -748,7 +749,18 @@ function moverMes(n) {
 
 /* ---------- Service worker (app instalable) ---------- */
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  const habiaControl = !!navigator.serviceWorker.controller;
+  let recargando = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // Versión nueva instalada: recarga una vez (si no hay una ventana abierta a medias)
+    if (!habiaControl || recargando) return;
+    recargando = true;
+    if ($('#modal').classList.contains('oculto')) location.reload();
+    else aviso('Hay una versión nueva de la app. Ciérrala y ábrela cuando puedas.');
+  });
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+    .then(r => { document.addEventListener('visibilitychange', () => { if (!document.hidden) r.update().catch(() => {}); }); })
+    .catch(() => {}));
 }
 
 enlazar();

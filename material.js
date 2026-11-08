@@ -76,6 +76,9 @@ function iconosUso(cid) {
 }
 
 /* ---------- Vista principal ---------- */
+function botonEspera(m) {
+  return `<button class="puesto-espera" data-espera-rapida="${esc(m.id)}" aria-label="Apuntar un grupo a la espera de ${esc(m.nombre)}">⏳ + Espera</button>`;
+}
 function pintarMaterial() {
   const grid = $('#material-grid');
   if (!grid) return;
@@ -84,23 +87,23 @@ function pintarMaterial() {
     const esp = esperaDe(m.id).length;
     const lim = m.limite_min ? `⏱ ${duracion(m.limite_min)} si hay espera` : 'Sin límite';
     if (!u) {
-      return `<button class="puesto libre ${esp ? 'con-espera' : ''}" data-material="${esc(m.id)}" aria-label="${esc(m.nombre)}: libre">
+      return `<div class="puesto libre ${esp ? 'con-espera' : ''}"><button class="puesto-cuerpo" data-material="${esc(m.id)}" aria-label="${esc(m.nombre)}: libre">
         <span class="ico">${m.icono}</span><span class="tit">${esc(m.nombre)}</span>
         <span class="estado">● Libre</span>
         <span class="det">${esp ? `<b class="espera-n">⏳ ${esp} esperando · ▶ dar turno</b>` : lim}</span>
-      </button>`;
+      </button>${esp ? botonEspera(m) : ''}</div>`;
     }
     const t = estadoTiempo(m, u);
     const grave = resumenFaltas(u.responsable_id).grave > 0;
     const n = (u.grupo || []).length;
-    return `<button class="puesto ${t.clase}" data-material="${esc(m.id)}" aria-label="${esc(m.nombre)}: en uso por ${esc(nombreDe(u.responsable_id))}, lleva ${duracion(t.min)}. ${esc(t.txt)}">
+    return `<div class="puesto ${t.clase}"><button class="puesto-cuerpo" data-material="${esc(m.id)}" aria-label="${esc(m.nombre)}: en uso por ${esc(nombreDe(u.responsable_id))}, lleva ${duracion(t.min)}. ${esc(t.txt)}">
       ${grave ? '<span class="alarma" title="El responsable tiene faltas graves">🚨</span>' : ''}
       <span class="ico">${m.icono}</span><span class="tit">${esc(m.nombre)}</span>
       <span class="crono mono">⏱ ${duracion(t.min)}</span>
       <span class="estado">${esc(t.txt)}</span>
       <span class="resp">🔑 ${esc(nombreDe(u.responsable_id))}${n ? ` +${n}` : ''}</span>
       <span class="det">${esp ? `<b class="espera-n">⏳ ${esp} esperando</b>` : 'Nadie esperando'}</span>
-    </button>`;
+    </button>${botonEspera(m)}</div>`;
   }).join('');
 
   const hoy = hoyISO();
@@ -388,11 +391,15 @@ function abrirEnUso(m, u) {
     <p class="resumen">Empezó a las ${horaDe(u.turno_inicio || u.inicio)} · lo entregó ${esc(u.abierto_por || '—')}</p>
     ${t.clase === 'pasado' ? `<div class="alerta alerta-duplicado">⏱ <b>Se han pasado del tiempo</b> y hay ${esp} grupo${esp > 1 ? 's' : ''} esperando. Que vengan a recepción a entregarlo.</div>` : ''}
     <button class="btn ${t.clase === 'pasado' ? 'btn-llama' : 'btn-verde'} btn-grande" id="eu-devolver">📥 Recibir y revisar</button>
-    <button class="btn btn-borde" id="eu-cambiar">🔁 Cambiar solo el responsable</button>
+    <div class="fila-botones">
+      <button class="btn btn-borde" id="eu-espera">⏳ + Apuntar a la espera</button>
+      <button class="btn btn-borde" id="eu-cambiar">🔁 Solo responsable</button>
+    </div>
     ${htmlEspera(m)}
     <button class="btn-enlace" id="eu-ficha">Ver ficha de ${esc(nombreDe(u.responsable_id))}</button>`);
   $('#eu-devolver').addEventListener('click', () => abrirDevolver(m, u));
   $('#eu-cambiar').addEventListener('click', () => abrirCambio(m, u));
+  $('#eu-espera').addEventListener('click', () => abrirApuntarEspera(m, () => abrirEnUso(m, usoAbierto(m.id) || u)));
   $('#eu-ficha').addEventListener('click', () => abrirFicha(u.responsable_id));
   enlazarEspera(m, () => abrirEnUso(m, usoAbierto(m.id) || u));
 }

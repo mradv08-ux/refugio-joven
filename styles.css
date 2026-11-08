@@ -332,3 +332,10 @@ input[type=number]{-moz-appearance:textfield}
 .siguiente .btn{margin-top:8px}
 details > summary::-webkit-details-marker{display:none}
 details > summary{width:100%}
+/* Tarjeta de juego: cuerpo tocable + botón de espera */
+.puesto{padding:0;gap:0;cursor:default;overflow:hidden}
+.puesto-cuerpo{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;padding:12px;cursor:pointer;flex:1;width:100%;-webkit-tap-highlight-color:transparent}
+.puesto-cuerpo:focus-visible{outline:2px solid var(--green);outline-offset:-2px;border-radius:14px}
+.puesto:has(.puesto-cuerpo:active){transform:scale(.98)}
+.puesto-espera{border:0;border-top:1px dashed rgba(198,167,76,.5);background:rgba(198,167,76,.12);color:var(--gold);font-weight:800;min-height:42px;cursor:pointer;font-size:.88rem}
+.puesto-espera:active{background:rgba(198,167,76,.25)}
