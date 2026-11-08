@@ -166,3 +166,34 @@ insert into public.cj_material (id, nombre, icono, orden) values
   ('futbolin','Futbolín','⚽',4), ('ps5','PS5','🎮',5), ('pingpong','Ping pong','🏓',6),
   ('mandotv','Mando de la TV','📺',7)
 on conflict (id) do nothing;
+
+/* ---------- Límites de tiempo, turnos y lista de espera ---------- */
+alter table public.cj_material add column if not exists limite_min smallint;
+update public.cj_material set limite_min = 60 where id in ('ps5','pc1','pc2');
+update public.cj_material set limite_min = 30 where id in ('billar','futbolin','pingpong');
+
+-- Cuándo empezó el turno del grupo (no se reinicia al cambiar solo el responsable)
+alter table public.cj_usos add column if not exists turno_inicio timestamptz;
+update public.cj_usos set turno_inicio = inicio where turno_inicio is null;
+alter table public.cj_usos alter column turno_inicio set default now();
+alter table public.cj_usos alter column turno_inicio set not null;
+alter table public.cj_usos drop constraint if exists cj_usos_devolucion_check;
+alter table public.cj_usos add constraint cj_usos_devolucion_check check (devolucion in ('bien','danado','perdido','cambio','turno'));
+
+create table if not exists public.cj_espera (
+  id             bigint generated always as identity primary key,
+  material_id    text not null references public.cj_material(id) on update cascade on delete cascade,
+  responsable_id bigint not null references public.cj_chavales(id) on delete cascade,
+  grupo          bigint[] not null default '{}',
+  fecha          date not null default (now() at time zone 'Europe/Madrid')::date,
+  creado         timestamptz not null default now(),
+  creado_por     text default public.cj_mi_nombre()
+);
+create index if not exists cj_espera_material on public.cj_espera (material_id, creado);
+create index if not exists cj_espera_responsable on public.cj_espera (responsable_id);
+alter table public.cj_espera enable row level security;
+revoke all on public.cj_espera from anon;
+grant select, insert, update, delete on public.cj_espera to authenticated;
+drop policy if exists cj_espera_equipo on public.cj_espera;
+create policy cj_espera_equipo on public.cj_espera for all to authenticated
+  using ((select public.cj_es_equipo())) with check ((select public.cj_es_equipo()));

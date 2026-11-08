@@ -290,3 +290,36 @@ input[type=number]{-moz-appearance:textfield}
 .devol button[data-d=perdido].on{border-color:var(--grave);background:rgba(255,59,48,.2);color:#ff6b62}
 .pasos{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--muted);font-size:.9rem}
 .pasos .flecha{color:var(--flame-hi);font-size:1.2rem}
+
+/* ---------- Turnos, tiempo y lista de espera ---------- */
+.columna{display:flex;flex-direction:column;gap:10px}
+.btn-peq{min-height:36px;padding:0 12px;font-size:.85rem}
+.mini{background:none;border:0;color:inherit;cursor:pointer;min-width:30px;min-height:30px;font-size:.9rem;opacity:.85}
+.seleccion{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;align-items:center}
+.chip-sel{display:inline-flex;align-items:center;gap:2px;padding:2px 4px 2px 8px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel-2);font-weight:700;font-size:.92rem}
+.chip-sel.resp{border-color:var(--gold);background:var(--gold-soft);color:#f6e3a6}
+.chip-sel .llave{padding:0 4px}
+.chip-sel.mal{border-color:var(--grave);background:rgba(255,59,48,.18)}
+.chip-sel small{color:#ff8b84;font-weight:600}
+.opcion.bloq{opacity:.55;cursor:not-allowed}
+.opcion .mas{margin-left:auto;font-size:1.2rem;color:var(--green-ink);font-weight:800;padding:0 4px}
+.opcion .info{flex:1;min-width:0}
+.espera-caja{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;border:1px dashed var(--line);background:rgba(255,255,255,.02)}
+.espera-cab{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.espera-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line)}
+.espera-item.primero{border-color:var(--gold)}
+.espera-item .pos{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--gold-soft);color:var(--gold);font-weight:700;flex:none}
+.espera-item .info{flex:1;min-width:0}
+.espera-n{color:var(--gold)}
+.puesto.con-espera{border-color:var(--gold);box-shadow:0 0 0 1px rgba(198,167,76,.4),0 0 16px rgba(198,167,76,.25)}
+.puesto.aviso{border-color:var(--flame-hi);background:linear-gradient(180deg,rgba(255,204,46,.18),transparent 75%),var(--panel)}
+.puesto.aviso .estado{color:var(--flame-hi)}
+.puesto.pasado{border-color:var(--grave);background:linear-gradient(180deg,rgba(255,59,48,.38),rgba(255,59,48,.12) 80%),var(--panel);animation:latido 1.4s ease-in-out infinite}
+.puesto.pasado .estado{color:#fff;background:var(--grave);padding:2px 6px;border-radius:6px;align-self:flex-start}
+@keyframes latido{50%{box-shadow:0 0 0 2px rgba(255,59,48,.7),0 0 26px rgba(255,59,48,.55)}}
+.elegido .reloj{margin-left:auto;text-align:right;font-size:1.35rem;font-weight:700;line-height:1.1}
+.elegido .reloj small{display:block;font-size:.7rem;color:var(--muted);font-weight:600}
+.elegido.reloj-ocupado{border-color:var(--flame);background:rgba(240,106,18,.12)}
+.elegido.reloj-aviso{border-color:var(--flame-hi);background:rgba(255,204,46,.14)}
+.elegido.reloj-pasado{border-color:var(--grave);background:rgba(255,59,48,.2)}
+.elegido.reloj-pasado .reloj{color:#ff6b62}

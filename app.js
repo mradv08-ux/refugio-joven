@@ -22,6 +22,7 @@ const E = {
   mesTurnos: null,     // { a, m } (m de 0 a 11)
   orden: 'nombre',
   material: [],        // [{ id, nombre, icono, orden }]
+  espera: [],          // lista de espera de cada juego
   usos: []             // [{ id, material_id, responsable_id, grupo, fecha, inicio, fin, devolucion, nota, falta_id, ... }]
 };
 
@@ -145,17 +146,18 @@ function elegirDiaInicial() {
 
 /* ---------- Datos ---------- */
 async function cargarDatos() {
-  const [ch, en, fa, tu, ma, us] = await Promise.all([
+  const [ch, en, fa, tu, ma, us, es] = await Promise.all([
     E.sb.from('cj_chavales').select('id,nombre,edad,notas,creado').order('nombre'),
     E.sb.from('cj_entradas').select('id,chaval_id,fecha,hora,registrado_por').order('hora', { ascending: false }).limit(20000),
     E.sb.from('cj_faltas').select('id,chaval_id,fecha,gravedad,motivo,puesta_por').order('fecha', { ascending: false }),
     E.sb.from('cj_turnos').select('fecha,email'),
-    E.sb.from('cj_material').select('id,nombre,icono,orden').eq('activo', true).order('orden'),
-    E.sb.from('cj_usos').select(USOS_CAMPOS).order('inicio', { ascending: false }).limit(5000)
+    E.sb.from('cj_material').select('id,nombre,icono,orden,limite_min').eq('activo', true).order('orden'),
+    E.sb.from('cj_usos').select(USOS_CAMPOS).order('inicio', { ascending: false }).limit(5000),
+    E.sb.from('cj_espera').select(ESPERA_CAMPOS).order('creado')
   ]);
-  for (const r of [ch, en, fa, tu, ma, us]) if (r.error) throw r.error;
+  for (const r of [ch, en, fa, tu, ma, us, es]) if (r.error) throw r.error;
   E.chavales = ch.data; E.entradas = en.data; E.faltas = fa.data; E.turnos = tu.data;
-  E.material = ma.data; E.usos = us.data;
+  E.material = ma.data; E.usos = us.data; E.espera = es.data;
 }
 
 async function refrescar(silencioso = false) {
@@ -490,6 +492,7 @@ function abrirFicha(id) {
       E.entradas = E.entradas.filter(x => x.chaval_id !== id);
       E.faltas = E.faltas.filter(x => x.chaval_id !== id);
       E.usos = E.usos.filter(x => x.responsable_id !== id);
+      E.espera = E.espera.filter(x => x.responsable_id !== id);
       cerrarModal(); aviso('Borrado'); pintarTodo();
     } catch (e) { aviso(errorHumano(e), true); }
   });

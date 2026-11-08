@@ -7,7 +7,14 @@ App de The Wild Side para el Centro Joven de San Juan del Puerto: registrar a lo
 - **Puerta**: escribes el nombre, pulsas **Entrar** y listo. Si no existe, sale **Apuntar como nuevo** (nombre + edad). Arriba marcas quién curra ese día.
 - **Nombres repetidos**: si ya hay alguien que se llama igual (aunque cambie una tilde o mayúscula), la app no deja guardarlo y te pide añadir apellido, inicial o apodo. Si solo se parece (dos "Carlos"), te avisa para que no lo apuntes dos veces.
 - **Chavales**: lista con días que han venido y faltas. Toca uno para ver su ficha, cambiar datos o **Poner falta** (leve, moderada o grave). Al darle entrada a alguien con faltas graves, la app avisa.
-- **Material**: billar, ordenador 1 y 2, futbolín, PS5, ping pong y mando de la TV. Verde = libre, naranja = en uso. Toca uno libre para dejarlo: eliges **un responsable** (y, si quieres, quién más juega). Toca uno en uso para **Devolver y revisar** (todo bien / algo roto / falta algo, y le pones la falta al responsable en el momento) o para **Cambiar de responsable** (los dos en recepción y revisado). Al devolver con daños te dice si el responsable ya tenía faltas y quién lo tuvo antes. En la ficha de cada chaval sale el material que ha tenido a su cargo.
+- **Material**: billar, ordenador 1 y 2, futbolín, PS5, ping pong y mando de la TV.
+  - **Dar turno**: tocas el juego y vas tocando nombres. El primero es el **responsable 🔑**; los demás, su grupo. Con la 🔑 de otro lo cambias.
+  - **No acaparar**: quien está jugando a un juego no puede apuntarse a la espera de ese juego ni entrar en el turno siguiente (sale "acaba de jugar"). Nadie puede estar en dos grupos de la misma lista.
+  - **Lista de espera** en cada juego: **+ Apuntar grupo**. Al dar el siguiente turno, se cargan solos los primeros de la lista.
+  - **Tiempo**: PS5 y ordenadores 1 h; billar, futbolín y ping pong 30 min. Solo cuenta si hay alguien esperando. A 5 min del final se pone amarillo; si se pasan, **rojo** y el reloj sigue hasta el cambio.
+  - **Siguiente turno**: revisas que está bien y das el juego al siguiente grupo (el reloj empieza de cero).
+  - **Solo responsable**: mismo grupo, cambia quién se hace cargo (los dos en recepción). El reloj **no** se reinicia.
+  - **Devolver y revisar**: todo bien / algo roto / falta algo, con falta al responsable. Si hay gente esperando, pasa directo a dar el turno.
 - **Turnos y €**: días de apertura del mes (viernes, sábado y domingo), quién trabajó cada uno, y calculadora de reparto: pones el dinero y te dice cuánto le toca a cada uno. Botón para copiar el resumen y pegarlo en WhatsApp.
 
 ## Quién entra
