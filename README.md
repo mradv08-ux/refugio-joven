@@ -1,6 +1,13 @@
 # Refugio Joven · Control de acceso del Centro Joven
 
-App de The Wild Side para el Centro Joven de San Juan del Puerto: registrar a los chavales que entran, ver cuántos días vienen, poner faltas y repartir el dinero según los días que trabaja cada uno.
+App de The Wild Side para el Centro Joven de San Juan del Puerto: registrar a los chavales que entran, ver cuántos días vienen, poner faltas, controlar el material con listas de espera y repartir el dinero según los días que trabaja cada uno.
+
+## Enlaces
+
+| Para quién | Enlace |
+|---|---|
+| **Equipo** (Mister y Leira) | https://mradv08-ux.github.io/refugio-joven/ |
+| **Chavales** (Mi Refugio) | https://mradv08-ux.github.io/refugio-joven/mi.html |
 
 ## Qué hace
 
@@ -46,10 +53,34 @@ Cualquier otra cuenta ve "Zona restringida". Los datos se guardan en el proyecto
 
 Por qué público: GitHub Pages gratis solo funciona con repos públicos. No pasa nada: el código no tiene datos de nadie; los datos están protegidos en Supabase.
 
-## Instalarla en el móvil
+## Instalarla en el móvil (icono en la pantalla de inicio)
 
-- **iPhone**: abre el enlace en **Safari** → botón **Compartir** → **Añadir a pantalla de inicio**.
-- **Android**: abre en **Chrome** → menú **⋮** → **Instalar app**.
+Sirve igual para la app del equipo y para Mi Refugio. Primero abre el enlace y entra (con tu cuenta o, el chaval, con su QR/código), y después:
+
+**Android (Chrome)**
+1. Abre el enlace en **Chrome** (si viene de WhatsApp o Instagram, toca **⋮** → **Abrir en Chrome**).
+2. Toca los **tres puntos ⋮** de arriba a la derecha.
+3. Pulsa **Añadir a pantalla de inicio** (o **Instalar app**).
+4. Confirma con **Instalar** / **Añadir**.
+
+**Android (Samsung Internet)**
+1. Menú **☰** de abajo → **Añadir página a** → **Pantalla de inicio**.
+
+**iPhone (Safari)**
+1. Abre el enlace en **Safari**.
+2. Toca el botón **Compartir** (el cuadrado con la flecha hacia arriba).
+3. Pulsa **Añadir a pantalla de inicio** → **Añadir**.
+
+Queda un icono con el logo de The Wild Side y se abre como una app normal.
+
+## Cómo entra un chaval a Mi Refugio
+
+1. En la app del equipo: **Chavales** → su ficha → **📱 Su acceso a «Mi Refugio»**.
+2. El chaval escanea el QR con la **cámara de su móvil** y toca el enlace que le aparece: entra directo y se queda guardado. (O le mandas el enlace con **Copiar enlace** por WhatsApp.)
+3. Que lo instale en la pantalla de inicio (pasos de arriba).
+4. Para entrar al centro, abre Mi Refugio → **🎟️ Enseñar mi pase** y vosotros lo escaneáis con **📷 QR** en Puerta.
+
+Solo tendrá que volver a hacerlo si borra los datos del navegador, cambia de móvil, pulsa **Salir** o le dais un **Código nuevo**.
 
 ## Si olvidáis la contraseña
 
