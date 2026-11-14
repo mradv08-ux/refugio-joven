@@ -169,7 +169,8 @@ on conflict (id) do nothing;
 
 /* ---------- Límites de tiempo, turnos y lista de espera ---------- */
 alter table public.cj_material add column if not exists limite_min smallint;
-update public.cj_material set limite_min = 60 where id in ('ps5','pc1','pc2');
+update public.cj_material set limite_min = 60 where id = 'ps5';
+update public.cj_material set limite_min = 40 where id in ('pc1','pc2');
 update public.cj_material set limite_min = 30 where id in ('billar','futbolin','pingpong');
 
 -- Cuándo empezó el turno del grupo (no se reinicia al cambiar solo el responsable)
