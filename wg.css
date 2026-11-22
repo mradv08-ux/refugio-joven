@@ -1,0 +1,51 @@
+/* =========================================================
+   Wild Game · estilo (fondo sangre sobre la noche del refugio)
+   ========================================================= */
+.wg-hero{border-radius:18px;padding:20px 16px 16px;text-align:center;color:#fff;overflow:hidden;
+  background:radial-gradient(110% 90% at 50% 0,#6d0f0f 0,#2a0c0c 55%,#120f0d 100%);border:1px solid #4a1414;box-shadow:inset 0 -5px 0 #b3171b,var(--shadow)}
+.wg-logo{font-family:var(--display);font-size:2.6rem;line-height:1;text-shadow:0 3px 0 #b3171b}
+.wg-intro{margin:8px auto 12px;max-width:320px;color:#f3d6d0}
+.wg-inicio{display:inline-grid;gap:2px;margin:0 auto 12px;padding:8px 16px;border-radius:12px;background:#b3171b;box-shadow:inset 0 -3px 0 #6d0f0f}
+.wg-inicio b{font-size:1.05rem}
+.wg-inicio span{font-size:.82rem;color:#ffd9d2;font-weight:700}
+.wg-cifras{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wg-cifras div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:8px 4px}
+.wg-cifras b{display:block;font-size:1.7rem;line-height:1.1}
+.wg-cifras span{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:#f3d6d0;font-weight:700}
+.wg-cifras .rojo b{color:#ff6b5e}
+.wg-ganador{margin-top:12px;background:var(--gold-soft);border:1px solid var(--gold);color:#f0e2b6;border-radius:12px;padding:10px;font-weight:800}
+.wg-estado{margin-top:14px;display:grid;gap:8px;justify-items:center}
+.wg-estado p{margin:0;color:#f3d6d0}
+.wg-yo{background:rgba(255,255,255,.09);border-radius:12px;padding:10px 12px;font-weight:700;width:100%}
+.wg-yo b{font-family:var(--mono);color:var(--flame-hi);margin-right:6px}
+.wg-yo.fuera{background:rgba(179,23,27,.35)}
+.btn-sangre{background:linear-gradient(180deg,#e0262a,#a81418);color:#fff;box-shadow:inset 0 -3px 0 #6d0f0f,0 0 16px rgba(224,38,42,.35);width:100%}
+.btn-salir-wg{background:none;border:0;color:#f3d6d0;text-decoration:underline;min-height:40px;cursor:pointer}
+.wg-juego .wg-fecha{font-size:.85rem;color:var(--muted)}
+.wg-juego .wg-fecha::first-letter{text-transform:uppercase}
+.wg-nombre-juego{font-family:var(--display);font-size:1.5rem;color:#ff6b5e;margin:2px 0 8px}
+.wg-normas{white-space:pre-wrap;line-height:1.5}
+.wg-ant summary{display:flex;justify-content:space-between;gap:8px;cursor:pointer;font-weight:700;list-style:none}
+.wg-ant summary::-webkit-details-marker{display:none}
+.wg-ant summary small{color:var(--muted);font-weight:500;white-space:nowrap}
+.wg-ant .wg-normas{margin-top:8px}
+.wg-rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.wg-j{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 6px 8px;display:grid;justify-items:center;align-content:start;gap:2px;text-align:center;min-height:80px}
+.wg-j>*:not(.wg-sangre){position:relative;z-index:1}
+.wg-j .n{font-size:1.25rem;font-weight:700}
+.wg-j .nm{font-size:.85rem;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wg-j.yo{border:2px solid var(--green);box-shadow:var(--glow)}
+.wg-j.gana{border:2px solid var(--gold);background:var(--gold-soft)}
+.wg-j.fuera{background:#1d1212;border-color:#4a2020}
+.wg-j.fuera .n,.wg-j.fuera .nm{color:#8f7b7b;text-decoration:line-through;text-decoration-color:#e0262a;text-decoration-thickness:3px}
+.wg-j.fuera .nm{text-decoration-thickness:2px}
+.wg-j .cayo{font-size:.7rem;color:#ff6b5e;font-weight:700;line-height:1.2}
+.wg-sangre{position:absolute;top:-6px;right:-14px;width:92px;height:46px;fill:#c0181d;opacity:.7;transform:rotate(-8deg);pointer-events:none;z-index:0}
+.wg-j .btn{margin-top:4px;min-height:32px;padding:0 10px;font-size:.78rem}
+/* Panel del equipo */
+#vista-wild{display:flex;flex-direction:column;gap:10px}
+.wg-control{max-width:none}
+.wg-check{flex-direction:row;align-items:center;gap:10px;color:var(--fg);font-size:1rem}
+.wg-check input{width:22px;height:22px;accent-color:var(--green)}
+.wg-inscritos{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.wg-inscritos .mono{color:var(--muted);margin-right:4px}

@@ -1,8 +1,8 @@
 'use strict';
 // Sube VERSION cada vez que cambies archivos publicados, o los móviles seguirán con la vieja.
-const VERSION = 'refugio-joven-v9';
+const VERSION = 'refugio-joven-v10';
 const SHELL = [
-  './', 'index.html', 'styles.css', 'app.js', 'material.js', 'portal.js', 'escaner.js', 'mi.html', 'mi.js', 'mi.css', 'mi.webmanifest', 'config.js', 'manifest.webmanifest', 'legal.html',
+  './', 'index.html', 'styles.css', 'app.js', 'material.js', 'portal.js', 'escaner.js', 'mi.html', 'mi.js', 'mi.css', 'wg.css', 'wg-comun.js', 'wildgame.js', 'mi.webmanifest', 'config.js', 'manifest.webmanifest', 'legal.html',
   'img/logo.png', 'img/icono-192.png', 'img/icono-512.png', 'img/apple-touch-icon.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js'
 ];

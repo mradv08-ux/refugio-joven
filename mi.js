@@ -10,6 +10,7 @@ const CLAVE = 'cj-mi-codigo';
 let codigo = '';
 let datos = null;
 let temporizador;
+let wg = null;          // datos del Wild Game (si está activo)
 
 /* ---------- Utilidades ---------- */
 function esc(t) {
@@ -35,11 +36,25 @@ async function pedir(c) {
   return r.json();
 }
 
+async function pedirWG(c) {
+  try {
+    const r = await fetch(`${CFG.supabaseUrl}/rest/v1/rpc/cj_wg_portal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: CFG.supabaseKey, Authorization: `Bearer ${CFG.supabaseKey}` },
+      body: JSON.stringify({ p_codigo: c })
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d && d.activo ? d : null;
+  } catch (e) { return null; }
+}
+
 async function entrar(c, silencioso = false) {
   if (!silencioso) mostrar('#m-carga');
   $('#m-carga-error').classList.add('oculto');
   try {
-    const d = await pedir(c);
+    const [d, w] = await Promise.all([pedir(c), pedirWG(c)]);
+    wg = w;
     if (!d) {
       guardar('');
       mostrar('#m-login');
@@ -58,6 +73,7 @@ async function entrar(c, silencioso = false) {
 /* ---------- Pintar ---------- */
 function pintar() {
   const d = datos;
+  pintarWild();
   $('#m-nombre').textContent = `Hola, ${d.nombre.split(' ')[0]} 👋`;
 
   // Comportamiento
@@ -130,6 +146,38 @@ function pintar() {
       <div class="info"><span class="meta"><span class="pildora p-${f.gravedad}">${f.gravedad}</span> ${fechaCorta(f.fecha)}</span>
       <p>${esc(f.motivo)}</p></div></div>`).join('')}</div>` : '';
 }
+
+/* ---------- Wild Game ---------- */
+function pintarWild() {
+  const caja = $('#m-wild');
+  if (!wg) { caja.innerHTML = ''; return; }
+  const yo = wg.yo, dentro = yo && !yo.salio;
+  let estado;
+  if (!dentro) estado = wg.inscripciones
+    ? `<p>${yo ? 'Te saliste del juego.' : 'Aún no estás inscrito.'}</p><button class="btn btn-grande btn-sangre" data-wg="apuntar">${yo ? 'Volver a inscribirme' : '💀 Inscribirme'}</button>`
+    : '<p>Las inscripciones están cerradas.</p>';
+  else if (yo.eliminado) estado = `<div class="wg-yo fuera"><b>${WG.num(yo.num)}</b>Has sido eliminado. ¡Gracias por jugar!</div>`;
+  else estado = `<div class="wg-yo"><b>${WG.num(yo.num)}</b>${WG.cuentas(wg).ganador ? '¡Eres el último superviviente! 🏆' : 'Estás dentro. Aguanta.'}</div>
+    <button class="btn-salir-wg" data-wg="salir">Salirme del juego</button>`;
+  caja.innerHTML = WG.cabecera(wg, estado) + WG.juegos(wg) + WG.rejilla(wg) + '<div class="wg-sep"></div>';
+}
+$('#m-wild').addEventListener('click', async (ev) => {
+  const b = ev.target.closest('[data-wg]');
+  if (!b) return;
+  const apuntar = b.dataset.wg === 'apuntar';
+  if (!apuntar && !confirm('¿Seguro que quieres salirte del Wild Game?')) return;
+  b.disabled = true;
+  try {
+    const r = await fetch(`${CFG.supabaseUrl}/rest/v1/rpc/${apuntar ? 'cj_wg_apuntar' : 'cj_wg_salir'}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: CFG.supabaseKey, Authorization: `Bearer ${CFG.supabaseKey}` },
+      body: JSON.stringify({ p_codigo: codigo })
+    }).then(x => x.json());
+    if (r && r.ok) aviso(apuntar ? `¡Dentro! Eres el jugador ${WG.num(r.num)} 💀` : 'Te has salido del Wild Game');
+    else aviso({ cerrado: 'Las inscripciones están cerradas.', eliminado: 'Ya te han eliminado: no puedes salirte.', codigo: 'Tu código ya no vale. Pide uno nuevo en recepción.' }[r && r.motivo] || 'No se ha podido. Pregunta en recepción.', true);
+  } catch (e) { aviso('No hay conexión. Revisa la cobertura y vuelve a intentarlo.', true); }
+  await entrar(codigo, true);
+});
 
 /* ---------- Apuntarse / salir de la lista de espera ---------- */
 function botonReserva(j, d, miReserva) {

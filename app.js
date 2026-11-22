@@ -158,6 +158,7 @@ async function cargarDatos() {
   for (const r of [ch, en, fa, tu, ma, us, es]) if (r.error) throw r.error;
   E.chavales = ch.data; E.entradas = en.data; E.faltas = fa.data; E.turnos = tu.data;
   E.material = ma.data; E.usos = us.data; E.espera = es.data;
+  await cargarWild();
 }
 
 async function refrescar(silencioso = false) {
@@ -199,6 +200,7 @@ function color(email) { return E.equipo.find(p => p.email === email)?.color || '
 
 /* ---------- Pintar ---------- */
 function pintarTodo() {
+  pintarWild();
   pintarMaterial();
   pintarPuerta();
   pintarChavales();
@@ -685,6 +687,7 @@ function enlazar() {
   $('#btn-refrescar').addEventListener('click', () => refrescar());
 
   $$('.tab').forEach(t => t.addEventListener('click', () => cambiarVista(t.dataset.vista)));
+  enlazarWild();
 
   // Puerta
   $('#dia-ant').addEventListener('click', () => { E.diaPuerta = sumarDias(E.diaPuerta, -1); pintarPuerta(); });
