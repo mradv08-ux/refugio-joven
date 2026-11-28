@@ -593,7 +593,7 @@ function pintarTurnos() {
     <div class="persona-caja" style="--c:${esc(p.color)}">
       <b>${esc(p.nombre)}</b><span class="mono">${p.dias}</span> <small>día${p.dias === 1 ? '' : 's'} trabajado${p.dias === 1 ? '' : 's'}</small>
     </div>`).join('');
-  pintarReparto(conteo, totalJornadas);
+  pintarReparto();
 
   const lista = [...new Set([...dias, ...delMes.map(t => t.fecha)])].sort();
   $('#turnos-lista').innerHTML = lista.map(d => {
@@ -609,30 +609,36 @@ function pintarTurnos() {
   }).join('') || '<div class="vacio">Este mes no hay días de apertura.</div>';
 }
 
-function pintarReparto(conteo, totalJornadas) {
-  const total = parseFloat(String($('#reparto-total').value).replace(',', '.')) || 0;
-  const cont = $('#reparto-resultado');
-  if (!total) { cont.innerHTML = '<p class="resumen">Pon cuánto hay que repartir y te digo cuánto le toca a cada uno según los días trabajados.</p>'; return; }
-  if (!totalJornadas) { cont.innerHTML = '<p class="resumen">Marca abajo quién trabajó cada día para poder repartir.</p>'; return; }
-  const porDia = total / totalJornadas;
-  cont.innerHTML = conteo.map(p => `
-    <div class="linea-reparto"><span><b>${esc(p.nombre)}</b> · ${p.dias} día${p.dias === 1 ? '' : 's'}</span><span class="mono">${euros(p.dias * porDia)}</span></div>`).join('')
-    + `<p class="resumen">A <span class="mono">${euros(porDia)}</span> por día trabajado (${totalJornadas} jornadas en total).</p>`;
+// Horas y euros de un día según el horario vigente esa fecha
+function horasDia(iso) {
+  const h = CFG.horarios.filter(x => x.desde <= iso).sort((a, b) => b.desde.localeCompare(a.desde))[0];
+  return (h && h.horas[aFecha(iso).getDay()]) || 0;
+}
+function pagoDe(email, pref) {
+  const dias = E.turnos.filter(t => t.email === email && t.fecha.startsWith(pref)).map(t => t.fecha).sort();
+  const horas = dias.reduce((s, d) => s + horasDia(d), 0);
+  return { dias, horas, euros: horas * CFG.euroHora };
+}
+
+function pintarReparto() {
+  const { a, m } = E.mesTurnos;
+  const pref = `${a}-${String(m + 1).padStart(2, '0')}`;
+  const filas = E.equipo.map(p => ({ p, ...pagoDe(p.email, pref) }));
+  const total = filas.reduce((s, f) => s + f.euros, 0);
+  $('#reparto-resultado').innerHTML = filas.map(f => `
+    <div class="linea-reparto"><span><b>${esc(f.p.nombre)}</b> · ${f.dias.length} día${f.dias.length === 1 ? '' : 's'} · ${f.horas} h</span><span class="mono">${euros(f.euros)}</span></div>`).join('')
+    + `<p class="resumen">Total del mes: <b class="mono">${euros(total)}</b> · a ${euros(CFG.euroHora)} la hora. Jueves 3 h · viernes y sábado 6 h (7 h hasta el 19/11) · domingo 4 h.</p>`;
 }
 
 function textoReparto() {
   const { a, m } = E.mesTurnos;
   const pref = `${a}-${String(m + 1).padStart(2, '0')}`;
-  const delMes = E.turnos.filter(t => t.fecha.startsWith(pref));
-  const total = parseFloat(String($('#reparto-total').value).replace(',', '.')) || 0;
-  const jornadas = delMes.length;
-  let t = `🔥 Refugio Joven · ${MESES[m]} ${a}\n`;
+  let t = `🔥 Refugio Joven · ${MESES[m]} ${a}\n`, total = 0;
   E.equipo.forEach(p => {
-    const d = delMes.filter(x => x.email === p.email).map(x => x.fecha).sort();
-    t += `\n${p.nombre}: ${d.length} días (${d.map(fechaCorta).join(', ') || '—'})`;
-    if (total && jornadas) t += ` → ${euros(total / jornadas * d.length)}`;
+    const r = pagoDe(p.email, pref); total += r.euros;
+    t += `\n${p.nombre}: ${r.dias.length} día${r.dias.length === 1 ? "" : "s"} · ${r.horas} h (${r.dias.map(d => `${fechaCorta(d)} ${horasDia(d)}h`).join(', ') || '—'}) → ${euros(r.euros)}`;
   });
-  if (total) t += `\n\nTotal a repartir: ${euros(total)}`;
+  t += `\n\nTotal: ${euros(total)} (a ${euros(CFG.euroHora)}/h)`;
   t += `\n\nQue la plaga se propague ☢️`;
   return t;
 }
@@ -731,10 +737,6 @@ function enlazar() {
   // Turnos
   $('#mes-ant').addEventListener('click', () => { moverMes(-1); });
   $('#mes-sig').addEventListener('click', () => { moverMes(1); });
-  $('#reparto-total').addEventListener('input', () => {
-    try { localStorage.setItem('cj-reparto-' + claveMes(), $('#reparto-total').value); } catch (e) { /* nada */ }
-    pintarTurnos();
-  });
   $('#btn-copiar-reparto').addEventListener('click', async () => {
     const t = textoReparto();
     try { await navigator.clipboard.writeText(t); aviso('Resumen copiado. Pégalo en WhatsApp'); }
@@ -751,9 +753,6 @@ function moverMes(n) {
   let { a, m } = E.mesTurnos;
   m += n; if (m < 0) { m = 11; a--; } if (m > 11) { m = 0; a++; }
   E.mesTurnos = { a, m };
-  let v = '';
-  try { v = localStorage.getItem('cj-reparto-' + claveMes()) || ''; } catch (e) { /* nada */ }
-  $('#reparto-total').value = v;
   pintarTurnos();
 }
 
